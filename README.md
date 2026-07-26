@@ -1,4 +1,4 @@
-# Google Cloud Developer Handbook
+# Google Cloud Developer Cheat Sheet
 
 > Learn **Google Cloud** by understanding **why services exist**, **how they work**, and **when to use them** — not by memorizing documentation.
 
