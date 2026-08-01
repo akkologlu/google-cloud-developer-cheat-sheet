@@ -61,11 +61,12 @@ Instead of listing features, every topic is explained through:
 
 ```text
 .
-├── assets/
-├── architectures/
-├── courses/
-├── exam-guide/
-└── glossary/
+├── cheat-sheets/        # Concise per-module reference notes (en/tr)
+├── deep-dive/           # Long-form, teaching-style tutorials per module (tr)
+├── docs/                # Architecture decision records
+├── exam-guide/          # Exam-trap summaries, decision tables, practice questions (en/tr)
+├── glossary/            # Alphabetical term reference (en/tr)
+└── transcripts/         # Raw source transcripts per module
 ```
 
 ---
