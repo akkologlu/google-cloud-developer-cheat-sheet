@@ -81,9 +81,9 @@ Modül, Cloud Monitoring'in güvenilirliği artırma biçimini şöyle özetliyo
 
 Bu son nokta pratikte çok önemlidir. "Sinyal-gürültü oranı" derken kastedilen şudur: Eğer her küçük dalgalanmada uyarı alıyorsan (gürültü çok), gerçek bir sorunu (sinyal) fark etmen zorlaşır — çünkü sürekli gelen sahte alarmlara karşı **duyarsızlaşırsın.** İyi kurgulanmış bir monitoring sistemi, sadece gerçekten önemli olan sapmalarda seni uyarır.
 
-## Dört Altın Sinyal (Four Golden Signals)
+## Four Golden Signals (Dört Altın Sinyal)
 
-Modül burada çok önemli, sınavda da sık sorulan bir çerçeve veriyor: **En azından, uygulamaların için yakalaman gereken bazı temel metrikler vardır.** Uygulama dashboard'ların, dört altın sinyali içermelidir: **gecikme (latency), trafik (traffic), hatalar (errors), doygunluk (saturation).**
+Modül burada çok önemli, sınavda da sık sorulan bir çerçeve veriyor: **En azından, uygulamaların için yakalaman gereken bazı temel metrikler vardır.** Uygulama dashboard'ların, Four Golden Signals'ı içermelidir: **gecikme (latency), trafik (traffic), hatalar (errors), doygunluk (saturation).**
 
 Bu dört sinyal, herhangi bir servisin sağlığını anlamak için **evrensel bir başlangıç noktasıdır.** Yeni bir servis kurduğunda "hangi metrikleri izlemeliyim?" diye düşünüyorsan, cevap her zaman bu dörtle başlar.
 
@@ -122,7 +122,7 @@ Modülün verdiği kritik uyarı: **Sistemler, %100 kullanıma ulaşmadan önce 
 
 > **Neden bu sezgiye aykırı geliyor?** Çünkü "kapasitenin %100'ü doluysa sorun var" diye düşünmek doğaldır ama gerçekte çoğu sistem (özellikle CPU ve bellek) **%100'e ulaşmadan çok önce** kuyruklar oluşmaya, gecikme artmaya başlar. Örneğin CPU kullanımı %70'i geçtiğinde bile bazı sistemlerde kuyruklama gecikmesi ciddi biçimde artabilir. Bu yüzden "doygunluk = %100 kullanım" diye basitleştirmek yanlıştır; doygunluk hedefini sistemin **gerçek davranışına göre** kalibre etmen gerekir.
 
-**Dört altın sinyal — özet tablo:**
+**Four Golden Signals — özet tablo:**
 
 | Sinyal | Ne ölçer? | Örnek metrik | Dikkat edilecek tuzak |
 | --- | --- | --- | --- |
@@ -131,7 +131,7 @@ Modülün verdiği kritik uyarı: **Sistemler, %100 kullanıma ulaşmadan önce 
 | Errors | Başarısız istek sayısı | HTTP 5xx, yanlış içerikli 200, SLA ihlali | "Başarılı" HTTP kodu bile hata olabilir |
 | Saturation | Kaynakların ne kadar dolu olduğu | CPU/bellek/disk kullanımı | %100'den **önce** bozulma başlayabilir |
 
-> **Sınav tuzağı:** "Dört altın sinyal nedir?" sorusunda dördünü de sayabilmen yetmez — her birinin **tanımındaki inceliği** bilmen gerekir: latency'de başarılı/başarısız ayrımı, errors'da "200 ama yanlış içerik" ihtimali, saturation'da "%100'den önce bozulma" uyarısı. Sınav soruları genelde tam bu incelik noktalarını test eder.
+> **Sınav tuzağı:** "Four Golden Signals nedir?" sorusunda dördünü de sayabilmen yetmez — her birinin **tanımındaki inceliği** bilmen gerekir: latency'de başarılı/başarısız ayrımı, errors'da "200 ama yanlış içerik" ihtimali, saturation'da "%100'den önce bozulma" uyarısı. Sınav soruları genelde tam bu incelik noktalarını test eder.
 
 ---
 
@@ -477,7 +477,7 @@ Cloud Profiler, **performans sorunlarını tanımlamana ve ortadan kaldırmana**
 
 **Modülün ana fikri:** Google Cloud Observability, metrikleri, logları ve metadata'yı **tek bir görünümde** birleştiren, Google Cloud/AWS/on-premises/hibrit ortamlarda çalışan bir araç şemsiyesidir. Beş bileşen — Cloud Monitoring, Cloud Logging, Error Reporting, Cloud Trace, Cloud Profiler — birbirini tamamlayan bir zincir oluşturur: Monitoring fark eder, Logging bağlam verir, Error Reporting hataları özetler, Trace nerede yavaşladığını gösterir, Profiler neden yavaşladığını kod seviyesinde gösterir.
 
-**Cloud Monitoring:** Metrikleri, olayları, metadata'yı toplar; alerting policy'ler kurdurur. Üç kullanım biçimi: (1) dashboard'larla trend takibi (DB büyümesi, DAU artışı, özellik kullanımı), (2) acil durum tespiti (metrik eşiklerinde alarm), (3) retrospektif analiz (bir olaydan sonra "aynı anda başka ne oldu"). Her uygulama dashboard'unda bulunması gereken **dört altın sinyal**: latency (başarılı/başarısız ayrı ölçülmeli), traffic (sistem-spesifik: HTTP req/sn veya read-write/sn), errors (açık hata + yanlış içerikli 200 + politika ihlali), saturation (%100'den önce bozulma başlayabilir, hedefleri dikkatli belirle).
+**Cloud Monitoring:** Metrikleri, olayları, metadata'yı toplar; alerting policy'ler kurdurur. Üç kullanım biçimi: (1) dashboard'larla trend takibi (DB büyümesi, DAU artışı, özellik kullanımı), (2) acil durum tespiti (metrik eşiklerinde alarm), (3) retrospektif analiz (bir olaydan sonra "aynı anda başka ne oldu"). Her uygulama dashboard'unda bulunması gereken **Four Golden Signals**: latency (başarılı/başarısız ayrı ölçülmeli), traffic (sistem-spesifik: HTTP req/sn veya read-write/sn), errors (açık hata + yanlış içerikli 200 + politika ihlali), saturation (%100'den önce bozulma başlayabilir, hedefleri dikkatli belirle).
 
 **Cloud Logging:** Gerçek zamanlı log yönetimi; depolama, arama, analiz, izleme desteği. **Logs Explorer** tekil kayıtları gösterir; **Log Analytics** SQL ile toplu analiz yapar. **Log-based alert** (anlık desen bildirimi) ile **log-based metric** (sayım/trend/eşik) farklı amaçlara hizmet eder. **Ops Agent**, Compute Engine VM'lerinde Fluent Bit (log) + OpenTelemetry Collector (metrik) ile çalışır; standart konumlardan otomatik log toplar, esnek işleme (parse/modify/exclude) sunar, sıfır konfigürasyonla sistem metrikleri (CPU/disk/bellek/ağ/process) ve küratörlenmiş üçüncü taraf metrikleri (Tomcat, Apache, NGINX) toplar. Cloud Run/functions'ta logging yerleşiktir (stdout/stderr otomatik gider); GKE'de "observability for GKE" ile açılır — **Kubernetes logları kalıcı değildir** (pod silinince container logu gider, sistem logu periyodik temizlenir, cluster event'leri 1 saatte silinir), bu yüzden Cloud Logging'e göndermek şart. **Structured (JSON) logging** önerilir: `textPayload` yerine `jsonPayload`, `severity` alanı log seviyesi verir, `message` ana metni belirler — aranabilirlik ve seviye bazlı filtreleme sağlar.
 
@@ -494,7 +494,7 @@ Cloud Profiler, **performans sorunlarını tanımlamana ve ortadan kaldırmana**
 # En Kritik Ayrımlar / Hızlı Tekrar (Cebinde Taşı)
 
 - **Beş aracın rolü:** Monitoring = genel sağlık + trend + alarm. Logging = ham detay + arama/analiz. Error Reporting = hataları grupla + özetle. Trace = istek bazlı "nerede yavaş". Profiler = kod bazlı "hangi fonksiyon kaynak yiyor".
-- **Dört altın sinyal:** Latency (başarılı/başarısız **ayrı** ölçülmeli — 500 hatası ortalamayı yanıltabilir), Traffic (sistem-spesifik: HTTP req/sn ya da DB read-write/sn), Errors (açık hata + yanlış içerikli 200 + SLA/politika ihlali de dahil), Saturation (**%100'den önce** bozulma başlayabilir, hedefi dikkatli seç).
+- **Four Golden Signals:** Latency (başarılı/başarısız **ayrı** ölçülmeli — 500 hatası ortalamayı yanıltabilir), Traffic (sistem-spesifik: HTTP req/sn ya da DB read-write/sn), Errors (açık hata + yanlış içerikli 200 + SLA/politika ihlali de dahil), Saturation (**%100'den önce** bozulma başlayabilir, hedefi dikkatli seç).
 - **Log-based alert vs log-based metric:** Alert = belirli bir desen göründüğü **anda** bildirim. Metric = **sayım/trend/eşik** — "kaç kez oldu, eşiği aştı mı" sorusuna cevap.
 - **Text log vs structured log:** Text = `textPayload`, log seviyesi yok, aranması zor. Structured (JSON) = `jsonPayload`, `severity` alanı log seviyesi verir, `message` ana metindir, sorgulanabilir. **Structured önerilir.**
 - **Ops Agent'in iki motoru:** **Fluent Bit** = log toplama. **OpenTelemetry Collector** = metrik toplama. Sıfır konfigürasyonla CPU/disk/bellek/ağ/process metrikleri + Tomcat/Apache/NGINX gibi küratörlenmiş üçüncü taraf metrikleri toplar.
@@ -510,4 +510,4 @@ Cloud Profiler, **performans sorunlarını tanımlamana ve ortadan kaldırmana**
 
 ---
 
-> **Kapanış:** Bu modül, bir uygulamayı üretime almanın sadece başlangıç olduğunu, gerçek işin **görünürlük kazanmakla** başladığını öğretti. Cloud Monitoring ile "bir şey ters mi gidiyor" sorusunu, dört altın sinyal çerçevesiyle **doğru metriklerle** cevaplamayı; Cloud Logging ile ham detaya inip yapılandırılmış loglamanın neden aranabilirlik kazandırdığını; Prometheus ekosisteminin Google Cloud'da nasıl yönetilen hale geldiğini; Error Reporting ile hata gürültüsünü anlamlı gruplara nasıl indirgediğini; Cloud Trace ile bir isteğin **nerede** yavaşladığını, Cloud Profiler ile de **neden** yavaşladığını (hangi kod satırının kaynağı tükettiğini) kod seviyesinde nasıl göreceğini gördün. Sınav öncesinde "En Kritik Ayrımlar" ve "Toplu Özet" bölümlerini tekrar oku; özellikle dört altın sinyalin incelik noktalarını, log-based alert/metric farkını, Cloud Trace'in otomatik/enstrümante ayrımını ve Trace/Profiler'ın birbirinden nasıl ayrıldığını aklında sağlamca tut. Başarılar!
+> **Kapanış:** Bu modül, bir uygulamayı üretime almanın sadece başlangıç olduğunu, gerçek işin **görünürlük kazanmakla** başladığını öğretti. Cloud Monitoring ile "bir şey ters mi gidiyor" sorusunu, Four Golden Signals çerçevesiyle **doğru metriklerle** cevaplamayı; Cloud Logging ile ham detaya inip yapılandırılmış loglamanın neden aranabilirlik kazandırdığını; Prometheus ekosisteminin Google Cloud'da nasıl yönetilen hale geldiğini; Error Reporting ile hata gürültüsünü anlamlı gruplara nasıl indirgediğini; Cloud Trace ile bir isteğin **nerede** yavaşladığını, Cloud Profiler ile de **neden** yavaşladığını (hangi kod satırının kaynağı tükettiğini) kod seviyesinde nasıl göreceğini gördün. Sınav öncesinde "En Kritik Ayrımlar" ve "Toplu Özet" bölümlerini tekrar oku; özellikle Four Golden Signals'ın incelik noktalarını, log-based alert/metric farkını, Cloud Trace'in otomatik/enstrümante ayrımını ve Trace/Profiler'ın birbirinden nasıl ayrıldığını aklında sağlamca tut. Başarılar!

@@ -6,7 +6,7 @@
 
 ## Bu modül neyi öğretiyor ve neden önemli?
 
-İlk modülde (Core Infrastructure) Google Cloud'un yapı taşlarını — sanal makineler, ağlar, IAM, depolama seçeneklerine kuşbakışı — tanıdın. İkinci modülde bir **geliştirici** olarak iyi bir bulut uygulamasının nasıl tasarlandığını öğrendin: durumsuzluk, gevşek bağlılık, önbellekleme, asenkron işleme. O modülde defalarca "durumu ayrı bir veritabanında tut", "veriyi önbelleğe al", "yüklenen dosyayı Cloud Storage'a koy" dedik ama **hangi veritabanını, hangi önbelleği, hangi depolamayı** seçeceğimizi havada bıraktık. İşte bu modül tam o boşluğu dolduruyor.
+İlk modülde (Core Infrastructure) Google Cloud'un yapı taşlarını — VM'ler (sanal makineler), ağlar, IAM, depolama seçeneklerine kuşbakışı — tanıdın. İkinci modülde bir **geliştirici** olarak iyi bir bulut uygulamasının nasıl tasarlandığını öğrendin: durumsuzluk, gevşek bağlılık, önbellekleme, asenkron işleme. O modülde defalarca "durumu ayrı bir veritabanında tut", "veriyi önbelleğe al", "yüklenen dosyayı Cloud Storage'a koy" dedik ama **hangi veritabanını, hangi önbelleği, hangi depolamayı** seçeceğimizi havada bıraktık. İşte bu modül tam o boşluğu dolduruyor.
 
 Gerçek bir uygulama tek tip veri saklamaz. Aynı uygulama içinde çok farklı veri türleri bir arada yaşar:
 

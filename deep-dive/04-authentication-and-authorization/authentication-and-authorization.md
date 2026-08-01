@@ -11,14 +11,14 @@ Bir uygulama yazarken karşına er ya da geç şu korkutucu soru çıkar: **Kull
 Google Cloud burada devreye giriyor: **IAM (Identity and Access Management)** ve **Identity Platform Authentication** ile, bu riski kendine almadan basit ve güvenli bir çözüme ulaşırsın. Bu modül, tam olarak bu ikilinin etrafında beş ana başlığı işliyor:
 
 1. **IAM prensipleri** — kimin, hangi kaynak üzerinde, hangi işlemi yapabileceğini nasıl tanımlarsın.
-2. **Servis hesapları ve diğer yöntemlerle** uygulamalarını Google Cloud API'lerini çağıracak şekilde doğrulama/yetkilendirme — ve **hangi yöntemi ne zaman kullanacağın.**
+2. **Service Account'lar ve diğer yöntemlerle** uygulamalarını Google Cloud API'lerini çağıracak şekilde doğrulama/yetkilendirme — ve **hangi yöntemi ne zaman kullanacağın.**
 3. **Identity-Aware Proxy (IAP)** ile bulut uygulamalarına erişimi kontrol etme.
 4. **Firebase SDK** ile federe kimlik yönetimini (federated identity management) kolayca uygulama.
 5. **Secret Manager** ile uygulamanın ihtiyaç duyduğu kimlik bilgilerini güvenle saklama.
 
 Bu beş başlık aslında tek bir hikâyenin parçalarıdır: **Önce "kim bu?" sorusunu çöz (authentication), sonra "bu kişi/uygulama neye izinli?" sorusunu çöz (authorization), sonra bu ikisini uygulamana koddan hiç dokunmadan, sızıntıya kapalı biçimde nasıl bağlayacağını öğren.** Şimdi baştan başlayalım.
 
-> **Önceki modülle bağ:** İkinci modülde "kullanıcı yönetimi eforunu kimlik yönetimini devrederek en aza indir" demiştik ve Identity Platform ile Firebase Authentication'ı kısaca tanıtmıştık. Bu modül tam olarak o cümlenin altını dolduruyor. Yine ikinci modülde, config'i koddan ayırıp ortam değişkenlerinde tutmayı öğretmiştik — Secret Manager, bu ilkenin "hassas veri" versiyonudur: parola ve API key'leri de koda gömmezsin, güvenli bir servise koyarsın. Üçüncü ve ikinci modüllerde servis hesabı kavramına birkaç kez değinmiştik ("Cloud Client Libraries genelde bir servis hesabı kimliğiyle çalışır" demiştik); bu modül servis hesabını en ince ayrıntısına kadar açıyor.
+> **Önceki modülle bağ:** İkinci modülde "kullanıcı yönetimi eforunu kimlik yönetimini devrederek en aza indir" demiştik ve Identity Platform ile Firebase Authentication'ı kısaca tanıtmıştık. Bu modül tam olarak o cümlenin altını dolduruyor. Yine ikinci modülde, config'i koddan ayırıp ortam değişkenlerinde tutmayı öğretmiştik — Secret Manager, bu ilkenin "hassas veri" versiyonudur: parola ve API key'leri de koda gömmezsin, güvenli bir servise koyarsın. Üçüncü ve ikinci modüllerde Service Account kavramına birkaç kez değinmiştik ("Cloud Client Libraries genelde bir Service Account kimliğiyle çalışır" demiştik); bu modül Service Account'ı en ince ayrıntısına kadar açıyor.
 
 ---
 
@@ -34,7 +34,7 @@ IAM ile erişim kontrolünü şu üç sorunun cevabıyla tanımlarsın:
 
 Bu üçlü, IAM'in tüm mantığının omurgasıdır. Bir IAM politikasını okurken her zaman bu üç boşluğu doldurmaya çalış: "**Kim**, **neyi**, **nerede** yapabiliyor?"
 
-Bunun üzerine tüm sistemi yöneten tek bir altın kural gelir: **En az ayrıcalık ilkesi (principle of least privilege).** Bu ilke, her principal'a **sadece işini yapmak için gerçekten gereken** kaynaklara erişim vermeni söyler — ne bir fazla, ne bir eksik. Neden bu kadar önemli? Çünkü her fazladan izin, saldırı yüzeyini (attack surface) büyütür. Bir hesap ele geçirilirse, o hesabın sahip olduğu her fazladan izin, saldırganın erişebileceği her fazladan kaynak demektir. Bu ilkeyi modül boyunca defalarca göreceksin — çünkü hem rol seçiminde hem servis hesabı tasarımında hem de Secret Manager'da tekrar tekrar karşına çıkıyor.
+Bunun üzerine tüm sistemi yöneten tek bir altın kural gelir: **En az ayrıcalık ilkesi (principle of least privilege).** Bu ilke, her principal'a **sadece işini yapmak için gerçekten gereken** kaynaklara erişim vermeni söyler — ne bir fazla, ne bir eksik. Neden bu kadar önemli? Çünkü her fazladan izin, saldırı yüzeyini (attack surface) büyütür. Bir hesap ele geçirilirse, o hesabın sahip olduğu her fazladan izin, saldırganın erişebileceği her fazladan kaynak demektir. Bu ilkeyi modül boyunca defalarca göreceksin — çünkü hem rol seçiminde hem Service Account tasarımında hem de Secret Manager'da tekrar tekrar karşına çıkıyor.
 
 ## "Kim" — Principal türleri
 
@@ -44,7 +44,7 @@ IAM politikasındaki "kim" kısmına **principal** denir. Google Cloud'da beş t
 
 **Google Account.** Bir geliştiriciyi, bir yöneticiyi ya da Google Cloud ile etkileşen herhangi bir **gerçek kişiyi** temsil eder. Google Cloud konsoluna giriş yaptığında kullandığın hesap budur.
 
-**Service account (servis hesabı).** Bireysel bir son kullanıcı yerine, bir **uygulamayı ya da compute workload'ını** temsil eden bir hesaptır. Google Cloud üzerinde barındırılan kodu çalıştırdığında, o kod **senin belirttiğin servis hesabı olarak** çalışır. Uygulamanın farklı mantıksal bileşenlerini (örneğin "faturalama servisi", "bildirim servisi") temsil etmek için istediğin kadar servis hesabı oluşturabilirsin — her bileşene kendi kimliğini ve kendi ince ayarlı iznini verirsin.
+**Service Account.** Bireysel bir son kullanıcı yerine, bir **uygulamayı ya da compute workload'ını** temsil eden bir hesaptır. Google Cloud üzerinde barındırılan kodu çalıştırdığında, o kod **senin belirttiğin Service Account olarak** çalışır. Uygulamanın farklı mantıksal bileşenlerini (örneğin "faturalama servisi", "bildirim servisi") temsil etmek için istediğin kadar Service Account oluşturabilirsin — her bileşene kendi kimliğini ve kendi ince ayarlı iznini verirsin.
 
 > **Sezgi:** Google Account "insan" demek, service account "makine/uygulama" demek. Sen konsola girerken Google Account kullanırsın; kodun Google Cloud API'lerini çağırırken service account kullanır.
 
@@ -52,7 +52,7 @@ IAM politikasındaki "kim" kısmına **principal** denir. Google Cloud'da beş t
 
 Bu üç principal türü sık sık birbirine ve yukarıdaki ikisine karıştırılır, o yüzden özellikle dikkatli ol.
 
-**Google group.** Google Account'ların ve servis hesaplarının **adlandırılmış bir koleksiyonudur**; benzersiz bir e-posta adresiyle tanımlanır. Ne işe yarar? Erişim kontrollerini **tek tek değil, topluca** uygulamana ve değiştirmene izin verir — bir gruba rol verdiğinde, o gruptaki herkes o rolü kazanır. **Ama kritik nokta şu: Google grubunun bir giriş kimlik bilgisi (login credential) yoktur.** Bir Google grubunu, bir kaynağa erişim talep etmek için **kimlik oluşturmakta kullanamazsın.** Grup, sadece "bu insanlara/hesaplara toplu olarak izin ver" demenin kolay yoludur; kendisi asla "ben buyum" diyerek bir isteği imzalayamaz.
+**Google group.** Google Account'ların ve Service Account'ların **adlandırılmış bir koleksiyonudur**; benzersiz bir e-posta adresiyle tanımlanır. Ne işe yarar? Erişim kontrollerini **tek tek değil, topluca** uygulamana ve değiştirmene izin verir — bir gruba rol verdiğinde, o gruptaki herkes o rolü kazanır. **Ama kritik nokta şu: Google grubunun bir giriş kimlik bilgisi (login credential) yoktur.** Bir Google grubunu, bir kaynağa erişim talep etmek için **kimlik oluşturmakta kullanamazsın.** Grup, sadece "bu insanlara/hesaplara toplu olarak izin ver" demenin kolay yoludur; kendisi asla "ben buyum" diyerek bir isteği imzalayamaz.
 
 **Google Workspace account.** İçerdiği tüm Google Account'ların **sanal bir grubunu** temsil eder ve kuruluşunun internet alan adıyla (örneğin `example.com`) ilişkilendirilir. Google grubu gibi, bu da kimlik oluşturmak için kullanılamaz ama **kolay izin yönetimi** sağlar — "example.com'daki herkese şu izni ver" demeni mümkün kılar.
 
@@ -81,7 +81,7 @@ Burada çok önemli bir kural var: **Bir izni bir kullanıcıya doğrudan atayam
 
 Somut örnek: "staff" adlı Google grubundaki tüm kullanıcılara, `project_a` üzerinde **InstanceAdmin** rolü verilir. Bu tek işlemle, gruptaki her kullanıcı o rolün içerdiği tüm izinleri (örnek oluşturma, silme, başlatma, durdurma, değiştirme gibi) kazanır.
 
-> **Neden izin değil de rol?** Çünkü gerçek dünyada bir işi yapmak neredeyse hiçbir zaman tek bir izin gerektirmez. "Sanal makineleri yönet" demek; oluşturabilme, silebilme, başlatabilme, durdurabilme ve değiştirebilme iznini **birlikte** gerektirir. Bu izinleri tek tek dağıtmak hem yorucu hem hataya açık olurdu. Rol, bunları anlamlı bir pakette gruplar.
+> **Neden izin değil de rol?** Çünkü gerçek dünyada bir işi yapmak neredeyse hiçbir zaman tek bir izin gerektirmez. "VM'leri (Virtual Machine) yönet" demek; oluşturabilme, silebilme, başlatabilme, durdurabilme ve değiştirebilme iznini **birlikte** gerektirir. Bu izinleri tek tek dağıtmak hem yorucu hem hataya açık olurdu. Rol, bunları anlamlı bir pakette gruplar.
 
 ### Üç rol türü
 
@@ -123,9 +123,9 @@ Bir Google Cloud servisini çağırdığında, tipik olarak bir **API çağrıs�
 
 **1. API key.** Uygulamayı tanımlayan bir karakter dizisidir. Bir API key kullanmak, isteği fatura ve kota amaçlı bir Google Cloud projesiyle ilişkilendirir. Ancak **ele geçirilmiş bir API key, API'ye tam ve uzun süreli erişim sağlar** — süresi dolmaz, kısıtlaması azdır. Bu yüzden API key'ler tipik olarak sadece **düşük güvenlikli, salt-okunur API'ler** için uygundur. Nitekim **çoğu Google API'si API key'leri kabul bile etmez.**
 
-**2. User account (kullanıcı hesabı — OAuth).** Bir kişiyi temsil eder ve o kişinin e-posta adresiyle tanımlanır. Giriş işlemi (login), e-posta adresini ve ayrı bir kimlik bilgisini (genellikle bir parola) kullanarak bir **OAuth token** üretir. Bu token, kullanıcının izinlerine göre **sınırlı erişim** sağlar ve **belirli bir süre sonra sona erer (expire).** OAuth token'lar, API key'lerden **daha güvenlidir.**
+**2. User Account (OAuth).** Bir kişiyi temsil eder ve o kişinin e-posta adresiyle tanımlanır. Giriş işlemi (login), e-posta adresini ve ayrı bir kimlik bilgisini (genellikle bir parola) kullanarak bir **OAuth token** üretir. Bu token, kullanıcının izinlerine göre **sınırlı erişim** sağlar ve **belirli bir süre sonra sona erer (expire).** OAuth token'lar, API key'lerden **daha güvenlidir.**
 
-**3. Service account (servis hesabı).** Bir workload'ı veya uygulamayı temsil eder ve benzersiz e-posta adresiyle tanımlanır. Bir servis hesabı için üretilen OAuth token, o servis hesabına **eklenmiş rollere göre** API'ye erişim sağlar.
+**3. Service Account.** Bir workload'ı veya uygulamayı temsil eder ve benzersiz e-posta adresiyle tanımlanır. Bir Service Account için üretilen OAuth token, o Service Account'a **eklenmiş rollere göre** API'ye erişim sağlar.
 
 | Yöntem | Neyi temsil eder | Güvenlik düzeyi | Süre | Ne zaman kullanılır |
 | --- | --- | --- | --- | --- |
@@ -135,32 +135,32 @@ Bir Google Cloud servisini çağırdığında, tipik olarak bir **API çağrıs�
 
 > **Sınav tuzağı — üç yöntemi karıştırma:** API key "ben bu projeyim" der ama "ben buyum" demez — kimlik doğrulamaz, sadece fatura/kota ilişkilendirir. User account bir **insanı**, service account bir **uygulamayı/workload'ı** temsil eder. Soruda "kullanıcı adına" geçiyorsa user account/OAuth; "arka planda çalışan bir servis" geçiyorsa service account; "düşük güvenlikli, herkese açık, salt okunur" geçiyorsa (nadiren) API key.
 
-## Servis hesabı kimlik doğrulaması derinlemesine
+## Service Account kimlik doğrulaması derinlemesine
 
-Servis hesabı, bir uygulamanın ya da compute workload'ının **kimliği** olarak davranır. Uygulaman, bir Google API'sini veya servisini çağırırken servis hesabını kullanır — böylece **kullanıcılar doğrulama sürecine doğrudan dahil olmazlar.** Her servis hesabı, kendine özgü benzersiz bir e-posta adresiyle tanımlanır.
+Service Account, bir uygulamanın ya da compute workload'ının **kimliği** olarak davranır. Uygulaman, bir Google API'sini veya servisini çağırırken Service Account'ı kullanır — böylece **kullanıcılar doğrulama sürecine doğrudan dahil olmazlar.** Her Service Account, kendine özgü benzersiz bir e-posta adresiyle tanımlanır.
 
-Servis hesapları **authorization'ı mümkün kılar** çünkü bir servis hesabına belirli IAM rolleri atayabilirsin — uygulamanın ihtiyaç duyduğu erişim düzeyini böyle sağlarsın.
+Service Account'lar **authorization'ı mümkün kılar** çünkü bir Service Account'a belirli IAM rolleri atayabilirsin — uygulamanın ihtiyaç duyduğu erişim düzeyini böyle sağlarsın.
 
-Peki servis hesapları **nasıl** doğrulanır? Kullanıcı hesaplarından tamamen farklı bir mekanizmayla: **RSA açık-özel anahtar çifti (public-private key pair)** ile.
+Peki Service Account'lar **nasıl** doğrulanır? Kullanıcı hesaplarından tamamen farklı bir mekanizmayla: **RSA açık-özel anahtar çifti (public-private key pair)** ile.
 
-- Servis hesabına bağlı bir **parola yoktur** — bu yüzden bir servis hesabıyla tarayıcı üzerinden giriş yapamazsın.
-- Servis hesabının **özel anahtarı (private key)**, bir **servis hesabı JSON dosyası** olarak indirilebilir.
-- Servis hesaplarının erken döneminde, bir uygulama olarak kimlik doğrulaman gerektiğinde bu indirilen anahtarlar rutin biçimde kullanılırdı.
-- Eğer bir servis hesabının özel anahtarını biliyorsan, bu anahtarla bir **erişim token'ı (access token)** talep edebilirsin. Ortaya çıkan token, o servis hesabı **adına** Google Cloud API'leriyle etkileşmeni sağlar.
+- Service Account'a bağlı bir **parola yoktur** — bu yüzden bir Service Account'la tarayıcı üzerinden giriş yapamazsın.
+- Service Account'ın **özel anahtarı (private key)**, bir **Service Account JSON dosyası** olarak indirilebilir.
+- Service Account'ların erken döneminde, bir uygulama olarak kimlik doğrulaman gerektiğinde bu indirilen anahtarlar rutin biçimde kullanılırdı.
+- Eğer bir Service Account'ın özel anahtarını biliyorsan, bu anahtarla bir **erişim token'ı (access token)** talep edebilirsin. Ortaya çıkan token, o Service Account **adına** Google Cloud API'leriyle etkileşmeni sağlar.
 
-> **Kritik benzetme:** Bir servis hesabının özel anahtarına sahip olmak, **bir kullanıcının parolasını bilmekle aynı şeydir.** O anahtar elindeyse, o hesap sensin. Bu yüzden bu anahtarı yönetmek son derece hassas bir sorumluluktur.
+> **Kritik benzetme:** Bir Service Account'ın özel anahtarına sahip olmak, **bir kullanıcının parolasını bilmekle aynı şeydir.** O anahtar elindeyse, o hesap sensin. Bu yüzden bu anahtarı yönetmek son derece hassas bir sorumluluktur.
 
-## Servis hesabı anahtarlarının üç riski
+## Service Account anahtarlarının üç riski
 
-Servis hesabı anahtarları dikkatli yönetilmezse ciddi bir güvenlik riski haline gelir. Üç somut risk şöyle:
+Service Account anahtarları dikkatli yönetilmezse ciddi bir güvenlik riski haline gelir. Üç somut risk şöyle:
 
 **1. Credential leakage (kimlik bilgisi sızıntısı).** Bir geliştirici, özel anahtarı yanlışlıkla **genel (public) bir kod deposuna commit'lerse** ne olur düşün: Kötü niyetli biri bu anahtarı bulup ortamındaki kaynaklara erişebilir. Bu, en sık karşılaşılan ve en önlenebilir risktir.
 
-**2. Privilege escalation (ayrıcalık yükseltme).** Kötü bir aktör bir servis hesabı anahtarına erişirse, bu anahtarı **kendi ayrıcalığını yükseltmek** için kullanabilir. Örneğin, veritabanı üzerinde izni olan bir servis hesabını kullanarak **kendine** veritabanı erişimi verebilir. En tehlikeli kısmı şu: **Tehlikeyi fark edip servis hesabı anahtarını değiştirsen bile, yükseltilmiş ayrıcalıklar kalıcı olarak yerinde kalır** — çünkü saldırgan zaten kendine kalıcı bir izin vermiştir, sadece anahtarı iptal etmek bunu geri almaz.
+**2. Privilege escalation (ayrıcalık yükseltme).** Kötü bir aktör bir Service Account anahtarına erişirse, bu anahtarı **kendi ayrıcalığını yükseltmek** için kullanabilir. Örneğin, veritabanı üzerinde izni olan bir Service Account'ı kullanarak **kendine** veritabanı erişimi verebilir. En tehlikeli kısmı şu: **Tehlikeyi fark edip Service Account anahtarını değiştirsen bile, yükseltilmiş ayrıcalıklar kalıcı olarak yerinde kalır** — çünkü saldırgan zaten kendine kalıcı bir izin vermiştir, sadece anahtarı iptal etmek bunu geri almaz.
 
-**3. Identity masking (kimlik gizleme).** Bir servis hesabı olarak kimlik doğrulayarak, kötü aktör **kendi gerçek kimliğini ve eylemlerini gizleyebilir.** Loglarda "siz" değil, servis hesabı görünür — bu da adli analizi (forensics) zorlaştırır.
+**3. Identity masking (kimlik gizleme).** Bir Service Account olarak kimlik doğrulayarak, kötü aktör **kendi gerçek kimliğini ve eylemlerini gizleyebilir.** Loglarda "siz" değil, Service Account görünür — bu da adli analizi (forensics) zorlaştırır.
 
-Bu risklerin en iyi azaltma yolu nedir? **İndirilmiş servis hesabı anahtarlarından kaçınmak** ve mümkün olduğunda servis hesaplarını doğrulamak için **başka yöntemler** kullanmaktır. Bir sonraki parçada tam olarak bu alternatif yöntemleri göreceğiz.
+Bu risklerin en iyi azaltma yolu nedir? **İndirilmiş Service Account anahtarlarından kaçınmak** ve mümkün olduğunda Service Account'ları doğrulamak için **başka yöntemler** kullanmaktır. Bir sonraki parçada tam olarak bu alternatif yöntemleri göreceğiz.
 
 ---
 
@@ -180,11 +180,11 @@ Uygulaman Google Cloud üzerinde mi çalışıyor?
 │   │
 │   └── Yerel olmayan (üretim) ortam mı?
 │         → Compute/serverless örneğine DOĞRUDAN bir
-│           servis hesabı ekle (attached service account)
+│           Service Account ekle (attached service account)
 │
 ├── EVET, ve GKE'de ÇALIŞIYOR
 │   → Workload Identity kullan
-│     (Kubernetes servis hesabı, IAM servis hesabını impersonate eder)
+│     (Kubernetes Service Account, IAM Service Account'ı impersonate eder)
 │
 └── HAYIR, Google Cloud dışında çalışıyor
     │
@@ -192,10 +192,10 @@ Uygulaman Google Cloud üzerinde mi çalışıyor?
     │    bir ID token üretebiliyor mu?)
     │      → EVET: Workload Identity Federation
     │        (harici token → Google Cloud access token,
-    │         servis hesabı anahtarı GEREKMEZ)
+    │         Service Account anahtarı GEREKMEZ)
     │
     └── Federation mümkün değilse
-          → SON ÇARE: Servis hesabı anahtarı
+          → SON ÇARE: Service Account anahtarı
             (büyük özenle güvenceye al)
 ```
 
@@ -209,9 +209,9 @@ ADC'nin en büyük değeri şudur: **Kodunu, yerel geliştirme ortamından Cloud
 
 ADC, kimlik bilgisi konumlarını şu **sırayla** kontrol eder:
 
-1. **`GOOGLE_APPLICATION_CREDENTIALS` ortam değişkeni** var mı diye önce buna bakılır. Varsa, ADC bu değişkenin gösterdiği yoldaki **servis hesabı dosyasını** kullanır.
+1. **`GOOGLE_APPLICATION_CREDENTIALS` ortam değişkeni** var mı diye önce buna bakılır. Varsa, ADC bu değişkenin gösterdiği yoldaki **Service Account dosyasını** kullanır.
 2. Ortam değişkeni ayarlı değilse, ADC bir sonraki adımda **gcloud CLI ile ayarlanmış kullanıcı kimlik bilgileri** için bilinen (well-known) bir konuma bakar.
-3. Son olarak, ADC **eklenmiş (attached) bir servis hesabı** kullanır. Bazı servisler, belirli bir kaynağa servis hesabı eklemene izin verir — örneğin Cloud Run, belirli bir servise veya fonksiyona servis hesabı eklenmesine izin verir; ADC o eklenmiş servis hesabını kullanır. Belirli kaynağa eklenmiş bir servis hesabı yoksa, ADC kullanılan servisin **varsayılan servis hesabını** kullanır (Compute Engine, GKE veya Cloud Run gibi).
+3. Son olarak, ADC **eklenmiş (attached) bir Service Account** kullanır. Bazı servisler, belirli bir kaynağa Service Account eklemene izin verir — örneğin Cloud Run, belirli bir servise veya fonksiyona Service Account eklenmesine izin verir; ADC o eklenmiş Service Account'ı kullanır. Belirli kaynağa eklenmiş bir Service Account yoksa, ADC kullanılan servisin **varsayılan Service Account'ı** kullanır (Compute Engine, GKE veya Cloud Run gibi).
 
 Bu üç adımın hiçbirinde kimlik bilgisi bulunamazsa, **hata fırlatılır.**
 
@@ -228,43 +228,43 @@ Bu iki komut isim olarak çok benzer ama **tamamen farklı amaçlara** hizmet ed
 
 ## Attached service accounts — üretim için tercih edilen yöntem
 
-Google Cloud serverless ürünlerinde (Cloud Run gibi) veya Compute Engine üzerinde çalışan uygulamalardan API çağırmanın **tercih edilen yolu**, servis hesabını doğrudan kaynağa **eklemektir (attach)**.
+Google Cloud serverless ürünlerinde (Cloud Run gibi) veya Compute Engine üzerinde çalışan uygulamalardan API çağırmanın **tercih edilen yolu**, Service Account'ı doğrudan kaynağa **eklemektir (attach)**.
 
-- Bir Compute Engine VM'inde çalışırken, VM'nin **varsayılan servis hesabını**, uygulaman için özel olarak oluşturulmuş bir servis hesabıyla değiştir. Bu servis hesabına yalnızca uygulamanın **gerçekten ihtiyaç duyduğu** ayrıcalıkları ver.
-- Benzer şekilde, Cloud Run'a bir servis dağıttığında veya Cloud Run functions'da bir fonksiyon oluşturduğunda, o servise veya fonksiyona bir servis hesabı ekle.
+- Bir Compute Engine VM'inde çalışırken, VM'nin **varsayılan Service Account'ı**, uygulaman için özel olarak oluşturulmuş bir Service Account'la değiştir. Bu Service Account'a yalnızca uygulamanın **gerçekten ihtiyaç duyduğu** ayrıcalıkları ver.
+- Benzer şekilde, Cloud Run'a bir servis dağıttığında veya Cloud Run functions'da bir fonksiyon oluşturduğunda, o servise veya fonksiyona bir Service Account ekle.
 
-**User-managed (kullanıcı tanımlı) bir servis hesabı eklemek, Google Cloud üzerinde çalışan üretim kodu için ADC'ye kimlik bilgisi sağlamanın tercih edilen yoludur.** Bu yöntemde hiçbir anahtar dosyası indirmene, taşımana ya da güvenceye almana gerek kalmaz — Google, kimlik bilgisi yaşam döngüsünü senin adına yönetir.
+**User-managed (kullanıcı tanımlı) bir Service Account eklemek, Google Cloud üzerinde çalışan üretim kodu için ADC'ye kimlik bilgisi sağlamanın tercih edilen yoludur.** Bu yöntemde hiçbir anahtar dosyası indirmene, taşımana ya da güvenceye almana gerek kalmaz — Google, kimlik bilgisi yaşam döngüsünü senin adına yönetir.
 
 ## Workload Identity (GKE için)
 
 Uygulaman GKE'de çalışıyorsa, Google Cloud API'lerine güvenli ve yönetilebilir biçimde erişmenin önerilen yolu **Workload Identity**'dir.
 
-Workload Identity, GKE cluster'ındaki bir **Kubernetes servis hesabının**, uygulaman Google Cloud API'lerini çağırırken bir **IAM servis hesabı gibi davranmasını** sağlar. Bunun getirisi büyük: Cluster'ındaki **her uygulamaya ayrı, ince taneli (fine-grained) bir kimlik ve yetkilendirme** atayabilirsin — tüm cluster tek bir geniş yetkili kimlik paylaşmak zorunda kalmaz.
+Workload Identity, GKE cluster'ındaki bir **Kubernetes Service Account'ın**, uygulaman Google Cloud API'lerini çağırırken bir **IAM Service Account gibi davranmasını** sağlar. Bunun getirisi büyük: Cluster'ındaki **her uygulamaya ayrı, ince taneli (fine-grained) bir kimlik ve yetkilendirme** atayabilirsin — tüm cluster tek bir geniş yetkili kimlik paylaşmak zorunda kalmaz.
 
-Workload Identity, Google Cloud API'lerini çağırırken **Kubernetes servis hesabı token'larını otomatik olarak IAM token'larıyla değiştirir (exchange).** Kurulumu iki adımdan oluşur:
+Workload Identity, Google Cloud API'lerini çağırırken **Kubernetes Service Account token'larını otomatik olarak IAM token'larıyla değiştirir (exchange).** Kurulumu iki adımdan oluşur:
 
 1. Cluster'ında Workload Identity'yi **etkinleştir.**
-2. Kubernetes servis hesabının, oluşturduğun IAM servis hesabını **impersonate etmesine (taklit etmesine) izin ver.**
+2. Kubernetes Service Account'ın, oluşturduğun IAM Service Account'ı **impersonate etmesine (taklit etmesine) izin ver.**
 
 Gerisini ADC halleder — kodun hiçbir şekilde değişmez.
 
 ## Workload Identity Federation (Google Cloud dışı için)
 
-Bazen uygulamalarını Google Cloud dışında — başka bir bulutta ya da kendi veri merkezinde (on-premises) — çalıştırman gerekir. İşte burada **Workload Identity Federation** devreye girer: **Servis hesabı anahtarı gerekmeden** bu harici workload'lara Google Cloud API erişimi verir.
+Bazen uygulamalarını Google Cloud dışında — başka bir bulutta ya da kendi veri merkezinde (on-premises) — çalıştırman gerekir. İşte burada **Workload Identity Federation** devreye girer: **Service Account anahtarı gerekmeden** bu harici workload'lara Google Cloud API erişimi verir.
 
-Geleneksel olarak, Google Cloud dışında çalışan uygulamalar erişim için **servis hesabı anahtarları** kullanırdı — ve gördüğümüz gibi, servis hesabı anahtarları doğru yönetilmezse ciddi bir güvenlik riskidir. Workload Identity Federation, **OpenID Connect (OIDC)** destekleyen bir kimlik sağlayıcısı kullanan harici uygulamalar için bu anahtar ihtiyacını **tamamen ortadan kaldırır.**
+Geleneksel olarak, Google Cloud dışında çalışan uygulamalar erişim için **Service Account anahtarları** kullanırdı — ve gördüğümüz gibi, Service Account anahtarları doğru yönetilmezse ciddi bir güvenlik riskidir. Workload Identity Federation, **OpenID Connect (OIDC)** destekleyen bir kimlik sağlayıcısı kullanan harici uygulamalar için bu anahtar ihtiyacını **tamamen ortadan kaldırır.**
 
-Mekanizma şöyle işler: Bir **OpenID Connect ID token'ı**, kısa ömürlü bir **Google Cloud erişim token'ıyla** değiştirilir (exchange edilir); bu token bir IAM servis hesabını impersonate etmene izin verir. Sonuç: Harici uygulama, bir servis hesabı anahtarını güvenceye almak ya da düzenli olarak döndürmek (rotate etmek) **zorunda kalmadan** Google Cloud servislerini çağırabilir.
+Mekanizma şöyle işler: Bir **OpenID Connect ID token'ı**, kısa ömürlü bir **Google Cloud erişim token'ıyla** değiştirilir (exchange edilir); bu token bir IAM Service Account'ı impersonate etmene izin verir. Sonuç: Harici uygulama, bir Service Account anahtarını güvenceye almak ya da düzenli olarak döndürmek (rotate etmek) **zorunda kalmadan** Google Cloud servislerini çağırabilir.
 
 > **Sınav tuzağı — Workload Identity vs Workload Identity Federation:** İsimleri neredeyse aynı olduğu için karıştırılırlar ama farklı senaryolar içindir. **Workload Identity**, **GKE cluster'ının içindeki** workload'lar içindir (Kubernetes SA → IAM SA). **Workload Identity Federation**, **Google Cloud'un dışındaki** workload'lar içindir — başka bir bulut sağlayıcısı ya da on-premises, ve OIDC destekleyen bir kimlik sağlayıcısı gerektirir. "GKE'de çalışıyorum" → Workload Identity. "AWS/Azure'da ya da kendi veri merkezimde çalışıyorum, federation kurmak istiyorum" → Workload Identity Federation.
 
-## Servis hesabı anahtarı — son çare, ama gerekirse en iyi uygulamalar
+## Service Account anahtarı — son çare, ama gerekirse en iyi uygulamalar
 
-Federation mümkün değilse, harici uygulamalara Google Cloud API erişimi vermek için servis hesabı anahtarı kullanman gerekebilir. Ama unutma: **Servis hesabı anahtarı kullanmak gerçekten son çaredir.** Kullanmak zorunda kalırsan, şu en iyi güvenlik uygulamalarına mutlaka uy:
+Federation mümkün değilse, harici uygulamalara Google Cloud API erişimi vermek için Service Account anahtarı kullanman gerekebilir. Ama unutma: **Service Account anahtarı kullanmak gerçekten son çaredir.** Kullanmak zorunda kalırsan, şu en iyi güvenlik uygulamalarına mutlaka uy:
 
 1. **Google'ın oluşturduğu özel anahtarı indirmek yerine, kendi açık anahtarını (public key) yükle.** Kendi altyapını kullanarak bir açık-özel anahtar çifti üret, açık anahtarı Google'a yükle, özel anahtarı ise çalışma ortamına (runtime) **güvenle kendin teslim et.** Bu yaklaşım, özel anahtarı işlerken hata yapma olasılığını azaltır — çünkü Google'a hiçbir zaman özel anahtarını göndermemiş olursun.
 2. **Anahtarları asla program kaynak koduna ya da binary'lere gömme.** Anahtarlar binary'lerden çıkarılabilir (extract edilebilir); kaynak kod ise depolarda (repository) barınıyor olabilir — bu da anahtarların ele geçirilme (compromise) olasılığını artırır.
-3. **Servis hesaplarının en az ayrıcalık ilkesine uyduğundan emin ol.** İlişkili uygulama için gereken **minimum izin setini** ver. Servis hesabı anahtarı bir şekilde ele geçirilse bile, kötü aktörün erişimini bu şekilde sınırlamış olursun.
+3. **Service Account'ların en az ayrıcalık ilkesine uyduğundan emin ol.** İlişkili uygulama için gereken **minimum izin setini** ver. Service Account anahtarı bir şekilde ele geçirilse bile, kötü aktörün erişimini bu şekilde sınırlamış olursun.
 
 ---
 
@@ -356,7 +356,7 @@ Secret Manager ile sırları **ikili blob (binary blob) veya metin dizesi (text 
 
 - **Versiyonlama.** Sırlar **versiyonlanabilir.** Her versiyon **farklı sır verisi** taşıyabilir ve saklanabilecek versiyon sayısında **limit yoktur.** Kritik nokta: **Versiyonlar değiştirilemez (immutable)**, ama **silinebilir.** Yani bir versiyonu güncellemek istediğinde eskisini "düzenlemezsin" — yeni bir versiyon oluşturursun; eski versiyon olduğu gibi kalır ya da silinir.
 
-- **En az ayrıcalık ilkesi.** Sırlar **proje seviyesinde** oluşturulur ve başlangıçta yalnızca **proje sahipleri (project owners)**, projedeki sırları oluşturma ve erişme iznine sahiptir. Diğer roller, sırlara erişmek için **açıkça IAM izni** verilmesini gerektirir. Bu, tıpkı Parça 1'de gördüğümüz en az ayrıcalık ilkesinin somut bir uygulamasıdır: varsayılan olarak kimse erişemez, sadece açıkça yetkilendirilenler erişir.
+- **En az ayrıcalık ilkesi.** Sırlar **proje seviyesinde** oluşturulur ve başlangıçta yalnızca **project owners (proje sahipleri)**, projedeki sırları oluşturma ve erişme iznine sahiptir. Diğer roller, sırlara erişmek için **açıkça IAM izni** verilmesini gerektirir. Bu, tıpkı Parça 1'de gördüğümüz en az ayrıcalık ilkesinin somut bir uygulamasıdır: varsayılan olarak kimse erişemez, sadece açıkça yetkilendirilenler erişir.
 
 - **Denetim günlükleri (audit logs).** **Cloud Audit Logs** etkinleştirildiğinde, Secret Manager ile yapılan **her etkileşim** — okumalar ve güncellemeler dahil — bir **denetim girdisi (audit entry)** oluşturur. Bu denetim, yalnızca **uygun kullanıcı ve uygulamaların** sırlarına eriştiğini doğrulamana olanak tanır.
 
@@ -387,7 +387,7 @@ Modülün tüm parçalarını, bir geliştiricinin karşılaşacağı somut sena
 | Yerel makinemde geliştirme yapıyorum, kodumu test ediyorum | `gcloud auth application-default login` |
 | Uygulamam GKE'de çalışıyor | Workload Identity |
 | Uygulamam başka bir bulutta / on-premises, OIDC destekleniyor | Workload Identity Federation |
-| Uygulamam Google Cloud dışında, federation imkânsız | Servis hesabı anahtarı (son çare, en iyi uygulamalarla) |
+| Uygulamam Google Cloud dışında, federation imkânsız | Service Account anahtarı (son çare, en iyi uygulamalarla) |
 | Uygulamam kullanıcı adına BigQuery/başka kaynağa erişecek | OAuth 2.0 (kullanıcı onayı ile) |
 | HTTPS ile erişilen uygulamama merkezi erişim kontrolü lazım, kod yazmak istemiyorum | Identity-Aware Proxy (IAP) |
 | Mobil/web uygulamama hızlı, hazır bir giriş ekranı lazım | Firebase Authentication |
@@ -409,7 +409,7 @@ Modülün tüm parçalarını, bir geliştiricinin karşılaşacağı somut sena
 
 **Üç API çağrı yetkilendirme yolu:** API key (zayıf, çoğu API kabul etmez), User account/OAuth (kişi, süreli token), Service account (uygulama, role bağlı token).
 
-**Servis hesabı:** E-posta ile tanımlı, parola yok, RSA anahtar çifti ile doğrulanır; JSON dosyası olarak indirilebilir private key. Private key = parola gibi hassas. Üç risk: credential leakage, privilege escalation (anahtar değişse bile ayrıcalık kalır), identity masking.
+**Service Account:** E-posta ile tanımlı, parola yok, RSA anahtar çifti ile doğrulanır; JSON dosyası olarak indirilebilir private key. Private key = parola gibi hassas. Üç risk: credential leakage, privilege escalation (anahtar değişse bile ayrıcalık kalır), identity masking.
 
 **Karar ağacı:** GC'de + non-GKE → local dev'de `gcloud auth application-default login`, üretimde attached SA. GKE'de → Workload Identity. GC dışı + federation mümkün → Workload Identity Federation (OIDC). Federation imkânsız → SA key (son çare).
 
@@ -434,7 +434,7 @@ Modülün tüm parçalarını, bir geliştiricinin karşılaşacağı somut sena
 - **Google Workspace account vs Cloud Identity domain:** İkisi de organizasyondaki tüm hesapların sanal grubu ama Cloud Identity domain kullanıcılarının Google Workspace uygulama/özelliklerine erişimi **yoktur**.
 - **Basic vs Predefined vs Custom role:** Basic = geniş/üretimde riskli. Predefined = Google yönetir, servise özel. Custom = sen yönetirsin, en az ayrıcalık için tam kontrol.
 - **API key vs User account vs Service account:** API key zayıf ve çoğu API kabul etmez; user account = kişi + süreli OAuth token; service account = uygulama + role bağlı token.
-- **Servis hesabı anahtarının 3 riski:** credential leakage (repo'ya sızma), privilege escalation (anahtar değişse bile ayrıcalık kalıcı), identity masking (kimlik gizleme). Mitigasyon: indirilen anahtarlardan kaçın.
+- **Service Account anahtarının 3 riski:** credential leakage (repo'ya sızma), privilege escalation (anahtar değişse bile ayrıcalık kalıcı), identity masking (kimlik gizleme). Mitigasyon: indirilen anahtarlardan kaçın.
 - **`gcloud auth login` vs `gcloud auth application-default login`:** Birincisi CLI komutları için, ikincisi koddan/ADC için.
 - **ADC arama sırası:** env var → gcloud kullanıcı kimlik bilgisi → attached SA (yoksa servis varsayılan SA'sı) → hata.
 - **Karar ağacı özeti:** local dev → ADC login; GC'de non-GKE üretim → attached SA; GKE → Workload Identity; GC dışı + federation mümkün → Workload Identity Federation; federation yok → SA key (son çare).
@@ -446,4 +446,4 @@ Modülün tüm parçalarını, bir geliştiricinin karşılaşacağı somut sena
 
 ---
 
-> **Kapanış:** Bu modül, "kimlik ve erişim" sorusunu tek bir cevaba değil, **duruma göre değişen bir karar ağacına** dönüştürdü. IAM ile "kim-ne-nerede" üçlüsünü tanımlamayı, servis hesaplarının hem güçlü hem riskli doğasını, ADC'nin arka planda sessizce doğru kimlik bilgisini bulma mekanizmasını, GKE içi ve GKE dışı senaryolar için Workload Identity ailesinin iki farklı üyesini, ve son çare olarak servis hesabı anahtarını nasıl güvenle kullanacağını öğrendin. Bunun üstüne IAP ile kod yazmadan erişim kontrolü kurmayı, Firebase Authentication ve Identity Platform ile kullanıcı kimlik yönetimini devretmeyi, ve Secret Manager ile hassas verini tek, denetlenebilir bir yerde saklamayı gördün. Sınav öncesi "En Kritik Ayrımlar" listesini tekrar oku; özellikle isim benzerliği taşıyan (Workload Identity / Workload Identity Federation) ve amaç benzerliği taşıyan (Firebase Authentication / Identity Platform) çiftleri karıştırmadığından emin ol. Bir konuda takılırsan ilgili parçaya dön ve "bu yöntem hangi somut sorunu çözmek için var" sorusunu yeniden kur. Sıradaki modüle geçmeye hazırsın.
+> **Kapanış:** Bu modül, "kimlik ve erişim" sorusunu tek bir cevaba değil, **duruma göre değişen bir karar ağacına** dönüştürdü. IAM ile "kim-ne-nerede" üçlüsünü tanımlamayı, Service Account'ların hem güçlü hem riskli doğasını, ADC'nin arka planda sessizce doğru kimlik bilgisini bulma mekanizmasını, GKE içi ve GKE dışı senaryolar için Workload Identity ailesinin iki farklı üyesini, ve son çare olarak Service Account anahtarını nasıl güvenle kullanacağını öğrendin. Bunun üstüne IAP ile kod yazmadan erişim kontrolü kurmayı, Firebase Authentication ve Identity Platform ile kullanıcı kimlik yönetimini devretmeyi, ve Secret Manager ile hassas verini tek, denetlenebilir bir yerde saklamayı gördün. Sınav öncesi "En Kritik Ayrımlar" listesini tekrar oku; özellikle isim benzerliği taşıyan (Workload Identity / Workload Identity Federation) ve amaç benzerliği taşıyan (Firebase Authentication / Identity Platform) çiftleri karıştırmadığından emin ol. Bir konuda takılırsan ilgili parçaya dön ve "bu yöntem hangi somut sorunu çözmek için var" sorusunu yeniden kur. Sıradaki modüle geçmeye hazırsın.

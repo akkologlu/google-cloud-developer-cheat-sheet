@@ -67,6 +67,20 @@ Do not invent new names.
 
 ---
 
+# Language of Technical Terms
+
+In Turkish (`.tr.md`) content, keep Google Cloud service names, product names, and technical terms in their original English form. Do not translate them into Turkish.
+
+Examples:
+
+- "Service Account" — not "Hizmet Hesabı"
+- "Load Balancing" — not "Yük Dengeleme"
+- "Preemptible VM" — not "Kesilebilir VM"
+
+Only the surrounding prose is written in Turkish; the terms themselves stay in English, exactly as they appear in the English content and in official Google Cloud documentation.
+
+---
+
 # Definitions
 
 Every definition should answer:

@@ -12,7 +12,7 @@ Bir düşünce deneyiyle başlayalım. Diyelim ki beş kişilik bir mühendislik
 
 1. **CI/CD pipeline'ın anatomisi** — sürekli entegrasyon (continuous integration), sürekli teslim (continuous delivery) ve sürekli dağıtım (continuous deployment) arasındaki fark; bir değişikliğin commit'ten üretime giden yolculuğu.
 2. **Bu hattın güvenliği** — Google Cloud'un **Software Delivery Shield** adı altında topladığı; Assured OSS, Cloud Build'in doğrulanabilir build metadata'sı, Artifact Analysis, Cloud Deploy, Binary Authorization ve GKE/Cloud Run'ın güvenlik özellikleri.
-3. **Container'lar ve Cloud Build** — uygulamanı neden bir sanal makine yerine bir container içinde paketlemen gerektiği, ve Cloud Build'in bu container imajını nasıl inşa edip Artifact Registry'ye gönderdiği.
+3. **Container'lar ve Cloud Build** — uygulamanı neden bir VM yerine bir container içinde paketlemen gerektiği, ve Cloud Build'in bu container imajını nasıl inşa edip Artifact Registry'ye gönderdiği.
 
 Bu üç başlık aslında tek bir hikâyenin parçalarıdır: **"Kodum commit edildikten sonra kullanıcıya ulaşana kadar hangi yoldan geçiyor, bu yol nasıl otomatikleşiyor, ve bu yolun her adımı nasıl güvence altına alınıyor?"** Şimdi baştan başlayalım.
 
@@ -170,7 +170,7 @@ Pipeline sadece "derleme ve dağıtım" ile bitmiyor; imaj **çalışmaya başla
 
 ## Neden container? VM'lerin çözemediği problem
 
-Container'lar, uygulamaları paketlemek ve dağıtmak için **tercih edilen yöntemdir.** Bunu anlamak için önce eski yöntemi — **sanal makineler (VM'ler)** aracılığıyla donanım sanallaştırmasını — hatırlamak gerekiyor.
+Container'lar, uygulamaları paketlemek ve dağıtmak için **tercih edilen yöntemdir.** Bunu anlamak için önce eski yöntemi — **VM'ler (Virtual Machine)** aracılığıyla donanım sanallaştırmasını — hatırlamak gerekiyor.
 
 VM'ler, birbirlerinden **kısmen her VM'nin kendi işletim sistemi kopyasına sahip olmasıyla** izole edilir. Bu yaklaşımın sorunu şu: **İşletim sistemleri açılışta (boot) yavaş olabilir ve kaynak açısından ağır (resource-heavy) olabilir.** Her VM, tam bir işletim sistemi kopyası taşıdığı için, hem disk/bellek açısından pahalıdır hem de her açılışta bu tam işletim sisteminin ayağa kalkmasını beklemen gerekir — genellikle **bir dakika veya daha fazla.**
 
@@ -196,9 +196,9 @@ Peki bir container, bir VM'nin sunmadığı neyi sunuyor? Modül burada üç som
 
 **2. İş yükü taşınabilirliği (workload portability).** Container'lar hafiftir ve **bir geliştiricinin dizüstü bilgisayarından, on-premises'teki bir VM'e ya da herhangi bir buluta kadar** hemen hemen her yerde çalışabilir. Bir geliştiricinin dizüstünde test ettiği ve bir entegrasyon ortamında test edilen **aynı uygulama**, üretim ortamında da çalışabilir. Bu taşınabilirlik, uygulamayı geliştirme yaşam döngüsü boyunca **terfi ettirmeyi (promotion)** basitleştirir ve iş yüklerini bulutlar ile veri merkezleri arasında **minimal efor** ile taşımana olanak tanır.
 
-**3. Uygulama izolasyonu (application isolation).** Container'lar, **CPU, bellek, depolama ve ağ kaynaklarını işletim sistemi seviyesinde sanallaştırır.** Uygulamalar, fiilen **kendi ortamlarında** çalışır — bu da aynı donanım üzerinde çalışan container'lı uygulamaların, birbirini etkilemeden **farklı bağımlılık sürümlerini** kullanabilmesini sağlar. Sadece işletim sistemini soyutlayarak (tüm sanal bilgisayarı değil), bir container **saniyenin bir kısmında "açılabilir" (boot).** Bir sanal makine ise tipik olarak **bir dakika veya daha fazla** sürer.
+**3. Uygulama izolasyonu (application isolation).** Container'lar, **CPU, bellek, depolama ve ağ kaynaklarını işletim sistemi seviyesinde sanallaştırır.** Uygulamalar, fiilen **kendi ortamlarında** çalışır — bu da aynı donanım üzerinde çalışan container'lı uygulamaların, birbirini etkilemeden **farklı bağımlılık sürümlerini** kullanabilmesini sağlar. Sadece işletim sistemini soyutlayarak (tüm VM'i değil), bir container **saniyenin bir kısmında "açılabilir" (boot).** Bir VM ise tipik olarak **bir dakika veya daha fazla** sürer.
 
-| Özellik | Sanal Makine (VM) | Container |
+| Özellik | Virtual Machine (VM) | Container |
 | --- | --- | --- |
 | İzolasyon birimi | Donanım (her VM kendi OS kopyasına sahip) | İşletim sistemi (process namespace + kaynak limiti) |
 | Başlangıç süresi | ~1 dakika veya daha fazla | Saniyenin bir kısmı |

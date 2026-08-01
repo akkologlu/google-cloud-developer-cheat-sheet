@@ -6,7 +6,7 @@
 
 ## Bu modül neyi öğretiyor ve neden önemli?
 
-İlk modülde Google Cloud'un yapı taşlarını — sanal makineler, ağlar, depolama, IAM — tanıdın. Ama bir geliştirici için asıl soru şudur: "Bu araçları kullanarak **iyi** bir bulut uygulaması nasıl yazarım?" Çünkü buluta bir uygulama koymak, onu otomatik olarak ölçeklenebilir, dayanıklı ve güvenli yapmaz. Uygulamanı **bulutun doğasına uygun** tasarlaman gerekir; aksi halde bulutun sunduğu esneklik, elastiklik ve güvenilirlikten faydalanamazsın.
+İlk modülde Google Cloud'un yapı taşlarını — VM'ler, ağlar, depolama, IAM — tanıdın. Ama bir geliştirici için asıl soru şudur: "Bu araçları kullanarak **iyi** bir bulut uygulaması nasıl yazarım?" Çünkü buluta bir uygulama koymak, onu otomatik olarak ölçeklenebilir, dayanıklı ve güvenli yapmaz. Uygulamanı **bulutun doğasına uygun** tasarlaman gerekir; aksi halde bulutun sunduğu esneklik, elastiklik ve güvenilirlikten faydalanamazsın.
 
 Bu öğretici iki büyük parçaya ayrılıyor:
 
@@ -168,7 +168,7 @@ Kullanıcıya kadar ulaşan hatalarda, hata mesajını açıkça göstermek yeri
 
 - Cloud Storage bucket'ları,
 - Cloud Run'da çalışan servisler ve fonksiyonlar,
-- Compute Engine sanal makine örnek grupları (instance groups).
+- Compute Engine VM örnek grupları (instance groups).
 
 > **Ayrım:** Memorystore = **uygulama verisi** önbelleği (bellek içi, Redis/Memcached). Cloud CDN = **web/statik içerik** önbelleği (Edge ağı). İkisi farklı katmanlarda çalışır.
 
@@ -271,7 +271,7 @@ Cloud API'ler iki şekilde çağrılabilir:
 - **HTTP istekleriyle**, **JSON (JavaScript Object Notation)** yükleri kullanarak.
 - **gRPC (Google Remote Procedure Call)** istekleriyle. gRPC, her yerde çalışabilen, **verimli bir ikili (binary) istek yapısı** kullanan açık kaynak bir uzak prosedür çağrısı çerçevesidir. İkili olduğu için JSON/HTTP'ye göre daha performanslıdır.
 
-**Kimlik bilgileri (credentials).** Cloud API'leri çağırmak için çağıran taraf **uygulama kimlik bilgileri** sağlamalıdır. Bu kimlik bilgileri, uygulamanın senin Google Cloud projene ve kaynaklarına erişmesine izin verildiğini doğrulamak için denetlenir. (İlk modüldeki **servis hesapları** burada devreye girer — uygulaman genelde bir servis hesabı kimliğiyle çalışır.)
+**Kimlik bilgileri (credentials).** Cloud API'leri çağırmak için çağıran taraf **uygulama kimlik bilgileri** sağlamalıdır. Bu kimlik bilgileri, uygulamanın senin Google Cloud projene ve kaynaklarına erişmesine izin verildiğini doğrulamak için denetlenir. (İlk modüldeki **Service Account'lar** burada devreye girer — uygulaman genelde bir Service Account kimliğiyle çalışır.)
 
 **Google Cloud SDK** iki kategoriden oluşur:
 
@@ -287,7 +287,7 @@ Bu araçların ve kütüphanelerin ikisi de, Google Cloud ile iletişim kurmak i
 - Cloud API çağrılarında **kimlik bilgisi göndermeyi otomatikleştirir** (sen uğraşmazsın).
 - Tek bir yaygın görevi tamamlamak için gereken **birden çok Cloud API çağrısını birleştirir.**
 
-gcloud CLI ile Cloud API'lerin izin verdiği görevlerin çoğunu yaparsın — sanal makine yönetmek, uygulama dağıtmak vb.
+gcloud CLI ile Cloud API'lerin izin verdiği görevlerin çoğunu yaparsın — VM yönetmek, uygulama dağıtmak vb.
 
 ### gcloud CLI'nin içindeki araçlar
 
@@ -334,7 +334,7 @@ Neden önerilir? Çünkü Cloud Client Libraries:
 
 Desteklenen diller: **Python, Node.js, Java, Go, PHP, Ruby, C++** ve **.NET dilleri (C# dahil).** Uygulaman bu dillerden birini kullanıyorsa, muhtemelen karşılık gelen Cloud Client Library'yi kullanmak isteyeceksin.
 
-Örnek akış (Python ile bir Cloud Storage bucket'ı oluşturmak): Her paket, bir API ile etkileşen bir **client (istemci)** sağlar. Uygulaman belirli bir **kimlikle** çalışır — bu tipik olarak bir **servis hesabıdır.** Örnek kod: Cloud Storage istemci kütüphanesini içe aktarır, istemciyi servis hesabının sağladığı **varsayılan kimlik bilgileriyle** örnekler ve bir bucket oluşturur.
+Örnek akış (Python ile bir Cloud Storage bucket'ı oluşturmak): Her paket, bir API ile etkileşen bir **client (istemci)** sağlar. Uygulaman belirli bir **kimlikle** çalışır — bu tipik olarak bir **Service Account'tur.** Örnek kod: Cloud Storage istemci kütüphanesini içe aktarır, istemciyi Service Account'un sağladığı **varsayılan kimlik bilgileriyle** örnekler ve bir bucket oluşturur.
 
 ### SDK'yı kurma ve başlatma
 
@@ -348,14 +348,14 @@ Google Cloud SDK'yı **Linux, macOS ve Windows**'a indirip kurabilirsin. Kurulum
 
 **Cloud Shell**, Google Cloud konsolundan kullanılan, **tarayıcı tabanlı komut satırı erişimi** olan ücretsiz bir yönetim makinesidir. Özellikleri:
 
-- Sana **5 GB kalıcı disk depolaması** olan **geçici bir sanal makine** örneği verir.
-- Başlattığında, **Debian tabanlı bir Linux** işletim sistemi çalıştıran bir **Compute Engine sanal makinesi** sağlar.
+- Sana **5 GB Persistent Disk depolaması** olan **geçici bir VM** örneği verir.
+- Başlattığında, **Debian tabanlı bir Linux** işletim sistemi çalıştıran bir **Compute Engine VM'i** sağlar.
 - Örnekler **kullanıcı başına, oturum başına** sağlanır. Örnekler yalnızca Cloud Shell oturumun etkinken var olur ve **bir saatlik hareketsizlikten sonra sonlanır.**
-- Yeni bir örnek sağlanması gerektiğinde, önceki örnekle kullanılan **kalıcı diski korur** — yani dosyaların kaybolmaz.
+- Yeni bir örnek sağlanması gerektiğinde, önceki örnekle kullanılan **Persistent Disk'i korur** — yani dosyaların kaybolmaz.
 - **Google Cloud SDK önceden kurulu** gelir ve projelerine/kaynaklarına **yerleşik yetkilendirmesi** vardır.
 - **Theia tabanlı yerleşik bir kod düzenleyici (code editor)** ile gelir; dizinlere göz atar, VM'indeki dosyaları görüntüler ve düzenlersin.
 
-> **İlk modülle bağ:** İlk modülde de Cloud Shell'i görmüştük (5 GB kalıcı home, hep kurulu/güncel/kimlik doğrulanmış gcloud). Burada ek ayrıntılar: bir saat hareketsizlikte sonlanır ama kalıcı disk korunur; Theia tabanlı editör dahildir.
+> **İlk modülle bağ:** İlk modülde de Cloud Shell'i görmüştük (5 GB kalıcı home, hep kurulu/güncel/kimlik doğrulanmış gcloud). Burada ek ayrıntılar: bir saat hareketsizlikte sonlanır ama Persistent Disk korunur; Theia tabanlı editör dahildir.
 
 ## Cloud Code
 
@@ -392,7 +392,7 @@ Faydaları:
 - BT yöneticileri, ekipteki tüm geliştiriciler için bulut geliştirme ortamlarını kolayca sağlar, ölçekler, yönetir ve güvenceye alır.
 - Ortamlar, geliştiricilerin konumu ya da bilgisayar/ağ türü ne olursa olsun **tutarlıdır** — "bende çalışıyordu" sorununu ortadan kaldırır.
 - **Geçici (ephemeral) Compute Engine VM'lerinde** çalışır; talep üzerine ya da IDE boştayken başlatılıp durdurularak **maliyet tasarrufu** sağlar.
-- IDE, **müşterinin kendi VM'lerinde ve kalıcı disklerinde, müşterinin VPC'si içinde** çalışır — böylece geliştirici makineleri ve kod **güvende** kalır.
+- IDE, **müşterinin kendi VM'lerinde ve Persistent Disk'lerinde, müşterinin VPC'si içinde** çalışır — böylece geliştirici makineleri ve kod **güvende** kalır.
 
 > **Cloud Shell vs Cloud Workstations:** Cloud Shell hızlı, geçici, 5 GB'lık bir yönetim kabuğudur (bir saatte sonlanır). Cloud Workstations ise ekip için standartlaştırılmış, yapılandırılabilir, güvenli ve kalıcı bir geliştirme ortamıdır — "geliştiricinin asıl çalışma tezgahı."
 
@@ -434,8 +434,8 @@ Modülün tamamını bir arada görelim.
 - **Dağıtım stratejileri:** **Blue/green** (iki ortam, anında geçiş/geri dönüş); **canary** (küçük dilimden kademeli); **strangler** (legacy'yi parça parça boğ).
 - **Cloud API çağrı biçimleri:** **HTTP + JSON** ya da **gRPC** (ikili, daha performanslı). Her ikisi de **credentials** gerektirir.
 - **Cloud Storage CLI:** Tercih edilen **gcloud storage** (gsutil'den performanslı). BigQuery → **bq**. Bileşen yönetimi → **gcloud components**.
-- **Cloud Client Libraries** = önerilen erişim yolu; dile doğal, otomatik auth + retry, çoğu gRPC kullanır; uygulama kimliği genelde **servis hesabı**.
-- **Cloud Shell** = tarayıcı kabuğu, 5 GB kalıcı disk, Debian VM, 1 saat hareketsizlikte sonlanır (disk korunur), Theia editör. **Cloud Workstations** = ekip için yönetilen, tutarlı, güvenli, yapılandırılabilir geliştirme ortamı (müşteri VPC'sinde, ephemeral VM).
+- **Cloud Client Libraries** = önerilen erişim yolu; dile doğal, otomatik auth + retry, çoğu gRPC kullanır; uygulama kimliği genelde **Service Account**.
+- **Cloud Shell** = tarayıcı kabuğu, 5 GB Persistent Disk, Debian VM, 1 saat hareketsizlikte sonlanır (disk korunur), Theia editör. **Cloud Workstations** = ekip için yönetilen, tutarlı, güvenli, yapılandırılabilir geliştirme ortamı (müşteri VPC'sinde, ephemeral VM).
 - **Cloud Code** = IDE eklentileri (VS Code, JetBrains, Cloud Shell Editor); Secret Manager, Kubernetes Explorer, YAML yardımı, Cloud Run emülatörü.
 - **Yerel emülatörler:** Bigtable, Datastore, Firestore, Pub/Sub, Spanner. Kod değişmeden ortam değişkeniyle geçiş; kaynak tüketmez.
 

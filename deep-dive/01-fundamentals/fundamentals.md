@@ -11,8 +11,8 @@ Google Cloud Developer sertifikasına giden yolda ilk durak, "çekirdek altyapı
 Bu modül yedi ana bölümden oluşuyor ve şu yolculuğu izliyor:
 
 1. **Bulut bilişim nedir ve neden var** — IaaS, PaaS, serverless, SaaS; Google'ın ağı; bölgeler ve zonlar; güvenlik; fiyatlandırma.
-2. **Kaynakların nasıl organize edildiği** — kaynak hiyerarşisi (organizasyon → klasör → proje → kaynak), IAM (kim, neyi, nerede yapabilir), servis hesapları, Cloud Identity, Google Cloud'a erişim yolları.
-3. **Compute Engine ve sanal ağ** — sanal makineler, VPC, otomatik ölçekleme, yük dengeleme, güvenlik duvarları, ağları birbirine bağlama.
+2. **Kaynakların nasıl organize edildiği** — kaynak hiyerarşisi (organizasyon → klasör → proje → kaynak), IAM (kim, neyi, nerede yapabilir), Service Account'lar, Cloud Identity, Google Cloud'a erişim yolları.
+3. **Compute Engine ve sanal ağ** — VM'ler, VPC, otomatik ölçekleme, load balancing, güvenlik duvarları, ağları birbirine bağlama.
 4. **Depolama seçenekleri** — Cloud Storage, Cloud SQL, Spanner, Firestore, Bigtable ve hangisini ne zaman seçeceğin.
 5. **Konteynerler ve Kubernetes** — konteyner mantığı, Kubernetes kavramları, GKE.
 6. **Uygulama geliştirme** — Cloud Run ve Cloud Run functions.
@@ -48,7 +48,7 @@ Bulut bir anda ortaya çıkmadı; üç dalga halinde evrildi. Bu tarihi bilmek, 
 
 **Birinci dalga — Colocation (ortak yerleşim).** Eskiden şirketler kendi veri merkezlerini, yani binalarını, elektriğini, soğutmasını inşa ederlerdi. Bu çok pahalıydı. Colocation ile şirketler kendi bina yatırımı yapmak yerine, hazır bir veri merkezinde **fiziksel alan kiraladılar**. Böylece emlak maliyetinden kurtuldular ama donanım hâlâ onlarındı.
 
-**İkinci dalga — Sanallaştırılmış veri merkezleri (virtualization).** Burada fiziksel bileşenler — sunucular, CPU'lar, diskler, yük dengeleyiciler — sanal cihazlara dönüştü. Yapı taşları aynıydı ama artık yazılımla tanımlanıyordu. Ancak dikkat: Sanallaştırmada altyapıyı hâlâ **işletme kendisi yönetir**. Ortam kullanıcı tarafından kontrol edilir ve yapılandırılır. Yani sunucuyu görmesen de, onu kurmak, güncellemek, ölçeklemek yine senin işindir.
+**İkinci dalga — Sanallaştırılmış veri merkezleri (virtualization).** Burada fiziksel bileşenler — sunucular, CPU'lar, diskler, load balancer'lar — sanal cihazlara dönüştü. Yapı taşları aynıydı ama artık yazılımla tanımlanıyordu. Ancak dikkat: Sanallaştırmada altyapıyı hâlâ **işletme kendisi yönetir**. Ortam kullanıcı tarafından kontrol edilir ve yapılandırılır. Yani sunucuyu görmesen de, onu kurmak, güncellemek, ölçeklemek yine senin işindir.
 
 **Üçüncü dalga — Konteyner tabanlı, tam otomatik, elastik bulut.** Google birkaç yıl önce şunu fark etti: Sanallaştırma modelinin sınırları içinde işi yeterince hızlı büyütemiyordu. Bu yüzden konteyner tabanlı bir mimariye geçti. Bu üçüncü dalgada **servisler altyapıyı otomatik olarak sağlar ve yapılandırır**. Sen uygulamana odaklanırsın, altyapı arka planda kendini ayarlar. İşte Google Cloud, bu üçüncü dalga bulutu müşterilerine sunar.
 
@@ -62,7 +62,7 @@ Sanallaştırma dalgasıyla birlikte iki yeni sunum biçimi ortaya çıktı ve b
 
 IaaS, sana **ham işlem, depolama ve ağ** yeteneği sunar. Bunlar fiziksel bir veri merkezine benzeyen sanal kaynaklar olarak düzenlenmiştir. Yani sana sanal bir sunucu verilir; işletim sistemini sen seçer, yazılımı sen kurar, her şeyi sen yönetirsin. Google Cloud'daki örneği **Compute Engine**'dir.
 
-IaaS'ın ödeme mantığı şudur: **Önceden ayırdığın (allocate ettiğin) kaynak için ödersin.** Bir sanal makineyi açtıysan, üzerinde iş yapmasan bile o kaynak sana ayrılmıştır ve ödemesini yaparsın.
+IaaS'ın ödeme mantığı şudur: **Önceden ayırdığın (allocate ettiğin) kaynak için ödersin.** Bir VM'i açtıysan, üzerinde iş yapmasan bile o kaynak sana ayrılmıştır ve ödemesini yaparsın.
 
 > **Analoji:** IaaS, boş bir daire kiralamaya benzer. Bina hazırdır ama içini nasıl döşeyeceğine, nasıl kullanacağına sen karar verirsin. Mobilyayı da bakımı da sen halledersin.
 
@@ -123,7 +123,7 @@ Neden birden fazla konum önemli? Çünkü uygulamanı nereye koyduğun şu üç
 Bu coğrafyalar **bölgelere (region)** ve **zonlara (zone)** ayrılır:
 
 - **Bölge (region):** Bağımsız bir coğrafi alandır ve zonlardan oluşur. Örneğin Londra, yani `europe-west2`, bir bölgedir ve şu anda üç farklı zondan oluşur.
-- **Zon (zone):** Google Cloud kaynaklarının fiilen konuşlandırıldığı alandır. Örneğin Compute Engine ile bir sanal makine başlatırsan, belirttiğin zonda çalışır.
+- **Zon (zone):** Google Cloud kaynaklarının fiilen konuşlandırıldığı alandır. Örneğin Compute Engine ile bir VM başlatırsan, belirttiğin zonda çalışır.
 
 Neden hem farklı zonlar hem farklı bölgeler var?
 
@@ -196,9 +196,9 @@ Bu bölüm, faturanı şişirmeden bulut kullanmayı öğretir.
 
 **Saniye bazlı faturalandırma.** Google, IaaS işlem hizmeti Compute Engine için **saniye bazlı** faturalandırmayı sunan ilk büyük sağlayıcıydı. Bu artık GKE, Managed Service for Apache Spark (Hadoop'un servis hali) ve App Engine esnek ortam VM'leri için de geçerlidir.
 
-**Sürekli kullanım indirimleri (sustained-use discounts).** Compute Engine'de otomatik uygulanır. Bir sanal makineyi ayın **%25'inden fazla** çalıştırdığında, o örnek için kullandığın her ek dakikaya otomatik indirim gelir. Hiçbir şey yapmana gerek yok; kendiliğinden işler.
+**Sürekli kullanım indirimleri (sustained-use discounts).** Compute Engine'de otomatik uygulanır. Bir VM'i ayın **%25'inden fazla** çalıştırdığında, o örnek için kullandığın her ek dakikaya otomatik indirim gelir. Hiçbir şey yapmana gerek yok; kendiliğinden işler.
 
-**Özel makine tipleri (custom machine types).** Sanal makinelerinin vCPU ve bellek miktarını iş yüküne göre ince ayar yaparak, fiyatını da iş yüküne göre şekillendirebilirsin.
+**Özel makine tipleri (custom machine types).** VM'lerinin vCPU ve bellek miktarını iş yüküne göre ince ayar yaparak, fiyatını da iş yüküne göre şekillendirebilirsin.
 
 **Fiyat hesaplama aracı.** Maliyetini önceden tahmin etmek için: `cloud.google.com/products/calculator`.
 
@@ -212,8 +212,8 @@ Peki "yanlışlıkla dev bir fatura çıkarmayı" nasıl önlersin? Üç mekaniz
 
 **Kotalar (quotas).** Bir hata ya da kötü niyetli saldırı yüzünden kaynakların aşırı tüketilmesini önler; hem hesap sahibini hem tüm topluluğu korur. İki tür kota vardır, ikisi de **proje düzeyinde** uygulanır:
 
-- **Oran kotaları (rate quotas):** Belirli bir süre sonra sıfırlanır. Örneğin GKE varsayılan olarak her projeden API'sine **her 100 saniyede 3.000 çağrı** izin verir; süre dolunca sıfırlanır.
-- **Tahsis kotaları (allocation quotas):** Projelerinde bulundurabileceğin kaynak sayısını yönetir. Örneğin varsayılan olarak her proje en fazla **15 VPC ağına** izin verir.
+- **Rate quotas (oran kotaları):** Belirli bir süre sonra sıfırlanır. Örneğin GKE varsayılan olarak her projeden API'sine **her 100 saniyede 3.000 çağrı** izin verir; süre dolunca sıfırlanır.
+- **Allocation quotas (tahsis kotaları):** Projelerinde bulundurabileceğin kaynak sayısını yönetir. Örneğin varsayılan olarak her proje en fazla **15 VPC ağına** izin verir.
 
 Projeler aynı kotalarla başlar ama bazılarını Google Cloud Support'tan artış talep ederek değiştirebilirsin.
 
@@ -237,7 +237,7 @@ Organizasyon Düğümü (Organization)   ← en üst
      Kaynaklar (Resources)           ← en alt (VM, bucket, tablo...)
 ```
 
-- **Kaynaklar (resources):** Sanal makineler, Cloud Storage bucket'ları, BigQuery tabloları — Google Cloud'daki her somut şey. En alt katman.
+- **Kaynaklar (resources):** VM'ler, Cloud Storage bucket'ları, BigQuery tabloları — Google Cloud'daki her somut şey. En alt katman.
 - **Projeler (projects):** Kaynaklar projeler içinde organize edilir. İkinci katman.
 - **Klasörler (folders):** Projeler klasörlere, hatta alt klasörlere gruplanabilir. Üçüncü katman.
 - **Organizasyon düğümü (organization node):** Kuruluşundaki tüm projeleri, klasörleri ve kaynakları kapsar. En üst katman.
@@ -283,15 +283,15 @@ Hiyerarşinin en tepesindeki kaynaktır. Hesaba bağlı her şey — klasörler,
 
 Bu düğüme özel bazı roller vardır:
 
-- **Organizasyon politikası yöneticisi (organization policy administrator):** Yalnızca yetkili kişilerin politikaları değiştirebilmesini sağlar.
-- **Proje oluşturucu (project creator):** Kimin proje oluşturabileceğini — dolayısıyla kimin para harcayabileceğini — kontrol etmenin harika bir yoludur.
+- **Organization Policy Administrator (organizasyon politikası yöneticisi):** Yalnızca yetkili kişilerin politikaları değiştirebilmesini sağlar.
+- **Project Creator (proje oluşturucu):** Kimin proje oluşturabileceğini — dolayısıyla kimin para harcayabileceğini — kontrol etmenin harika bir yoludur.
 
 **Organizasyon düğümü nasıl oluşur?** Bu, şirketinin Google Workspace müşterisi olup olmadığına bağlıdır:
 
 - **Workspace domainin varsa:** Google Cloud projeleri otomatik olarak organizasyon düğümüne ait olur.
 - **Yoksa:** **Cloud Identity** (Google'ın kimlik, erişim, uygulama ve uç nokta yönetim platformu) kullanarak bir tane üretirsin.
 
-## IAM — Kimlik ve Erişim Yönetimi
+## IAM — Identity and Access Management
 
 Bir organizasyon düğümünde çok sayıda klasör, proje ve kaynak olunca, "kim neye erişebilir" sorusunu yönetmen gerekir. Bunun aracı **IAM (Identity and Access Management)**'dir. IAM ile "**kim**, **neyi**, **hangi kaynak üzerinde** yapabilir" politikalarını tanımlarsın.
 
@@ -301,7 +301,7 @@ Politikadaki "kim" kısmı şunlardan biri olabilir:
 
 - Bir Google hesabı
 - Bir Google grubu
-- Bir servis hesabı
+- Bir Service Account
 - Bir Cloud Identity domaini
 
 Bu "kim"e **principal** denir. Her principal'ın kendi tanımlayıcısı vardır — genellikle bir e-posta adresi.
@@ -310,7 +310,7 @@ Bu "kim"e **principal** denir. Her principal'ın kendi tanımlayıcısı vardır
 
 Politikanın "neyi yapabilir" kısmı bir **rol** ile tanımlanır. Bir IAM rolü, **izinler (permissions) koleksiyonudur**. Bir principal'a rol verdiğinde, o rolün içerdiği tüm izinleri vermiş olursun.
 
-Örnek: Bir projedeki sanal makineleri yönetmek için onları oluşturabilmen, silebilmen, başlatabilmen, durdurabilmen ve değiştirebilmen gerekir. Bu izinler tek bir rolde gruplanır ki anlaşılması ve yönetilmesi kolay olsun.
+Örnek: Bir projedeki VM'leri yönetmek için onları oluşturabilmen, silebilmen, başlatabilmen, durdurabilmen ve değiştirebilmen gerekir. Bu izinler tek bir rolde gruplanır ki anlaşılması ve yönetilmesi kolay olsun.
 
 Bir principal'a hiyerarşinin belirli bir öğesinde rol verildiğinde, ortaya çıkan politika **hem o öğeye hem de altındaki tüm öğelere** uygulanır (yine miras kuralı).
 
@@ -348,20 +348,20 @@ Custom rol oluşturmadan önce iki önemli detay:
 | Predefined | Servise/işe özel | Çoğu gerçek senaryo |
 | Custom | Tam senin belirlediğin | En az ayrıcalık gerektiğinde; yönetim yükünü kabul ediyorsan |
 
-## Servis hesapları (service accounts)
+## Service Account'lar
 
-Şu senaryoyu düşün: Bir Compute Engine sanal makinesinde çalışan bir program, düzenli olarak başka bulut servislerine erişmek zorunda. Her seferinde bir insanın elle erişim vermesini beklemek saçma olur. Çözüm: **Sanal makinenin kendisine gerekli izinleri vermek.** İşte servis hesapları bunun içindir.
+Şu senaryoyu düşün: Bir Compute Engine VM'inde çalışan bir program, düzenli olarak başka bulut servislerine erişmek zorunda. Her seferinde bir insanın elle erişim vermesini beklemek saçma olur. Çözüm: **VM'in kendisine gerekli izinleri vermek.** İşte Service Account'lar bunun içindir.
 
-Servis hesapları, bir sanal makineye belirli izinler atamanı sağlar; böylece VM, **insan müdahalesi olmadan** diğer servislerle etkileşir. Örnek: VM'de çalışan bir uygulama Cloud Storage'a veri yazmak istiyor ama internetteki kimsenin değil, **yalnızca o VM'nin** erişmesini istiyorsun. Bir servis hesabı oluşturup o VM'yi Cloud Storage'a kimlik doğrulatırsın.
+Service Account'lar, bir VM'e belirli izinler atamanı sağlar; böylece VM, **insan müdahalesi olmadan** diğer servislerle etkileşir. Örnek: VM'de çalışan bir uygulama Cloud Storage'a veri yazmak istiyor ama internetteki kimsenin değil, **yalnızca o VM'nin** erişmesini istiyorsun. Bir Service Account oluşturup o VM'yi Cloud Storage'a kimlik doğrulatırsın.
 
-Servis hesaplarının özellikleri:
+Service Account'ların özellikleri:
 
 - Bir **e-posta adresiyle** adlandırılır, ama parola yerine **kriptografik anahtarlar** kullanır.
-- Örneğin bir servis hesabına Compute Engine "Instance Admin" rolü verilmişse, o servis hesabına sahip bir VM'de çalışan uygulama başka VM'ler oluşturabilir, değiştirebilir, silebilir.
+- Örneğin bir Service Account'a Compute Engine "Instance Admin" rolü verilmişse, o Service Account'a sahip bir VM'de çalışan uygulama başka VM'ler oluşturabilir, değiştirebilir, silebilir.
 
-**İki yönlü doğası — hem kimlik hem kaynak.** Servis hesapları da yönetilmelidir. Diyelim Alice hangi Google hesaplarının servis hesabı gibi davranabileceğini yönetmeli, Bob ise sadece servis hesaplarının listesini görmeli. Güzel haber: Servis hesabı bir kimlik olmanın yanında **bir kaynaktır** da; dolayısıyla kendisine IAM politikaları eklenebilir. Böylece Alice'e servis hesabında editor rolü, Bob'a viewer rolü verirsin — tıpkı başka bir kaynakta olduğu gibi.
+**İki yönlü doğası — hem kimlik hem kaynak.** Service Account'lar da yönetilmelidir. Diyelim Alice hangi Google hesaplarının Service Account gibi davranabileceğini yönetmeli, Bob ise sadece Service Account'ların listesini görmeli. Güzel haber: Service Account bir kimlik olmanın yanında **bir kaynaktır** da; dolayısıyla kendisine IAM politikaları eklenebilir. Böylece Alice'e Service Account'ta editor rolü, Bob'a viewer rolü verirsin — tıpkı başka bir kaynakta olduğu gibi.
 
-> **Kavramsal düğüm:** Servis hesabı hem "erişim yapan" (identity) hem de "üzerine erişim tanımlanan" (resource) olabilir. Bu ikili doğayı anlamak önemlidir.
+> **Kavramsal düğüm:** Service Account hem "erişim yapan" (identity) hem de "üzerine erişim tanımlanan" (resource) olabilir. Bu ikili doğayı anlamak önemlidir.
 
 ## Cloud Identity
 
@@ -380,7 +380,7 @@ Google Cloud ile etkileşmenin dört yolu vardır. Hepsini bilmen gerekir çünk
 **2. Google Cloud SDK ve Cloud Shell.**
 
 - **Cloud SDK:** Kaynakları ve uygulamaları yönetmek için bir araç setidir. İçinde **gcloud CLI** (ana komut satırı arayüzü) ve **bq** (BigQuery için komut satırı aracı) bulunur. Kurulduğunda tüm araçlar `bin` dizini altında yer alır.
-- **Cloud Shell:** Tarayıcıdan doğrudan komut satırı erişimi verir. **Debian tabanlı bir sanal makinedir**, kalıcı **5 GB'lık home dizini** vardır. İçinde gcloud ve diğer araçlar hep kurulu, güncel ve tam kimlik doğrulanmış gelir — hiçbir kurulum yapman gerekmez.
+- **Cloud Shell:** Tarayıcıdan doğrudan komut satırı erişimi verir. **Debian tabanlı bir VM'dir**, kalıcı **5 GB'lık home dizini** vardır. İçinde gcloud ve diğer araçlar hep kurulu, güncel ve tam kimlik doğrulanmış gelir — hiçbir kurulum yapman gerekmez.
 
 **3. API'ler.** Google Cloud'u oluşturan servisler API sunar; böylece yazdığın kod onları kontrol edebilir. Konsoldaki **Google APIs Explorer** hangi API'lerin, hangi sürümlerde mevcut olduğunu gösterir ve onları etkileşimli deneyebilirsin. Sıfırdan kod yazmak zorunda değilsin: Google, **Cloud Client Libraries** ve **Google API Client Libraries** sağlar. Desteklenen diller: Java, Python, PHP, C#, Go, Node.js, Ruby, C++.
 
@@ -390,7 +390,7 @@ Google Cloud ile etkileşmenin dört yolu vardır. Hepsini bilmen gerekir çünk
 
 # BÖLÜM 3 — Compute Engine ve Sanal Ağ
 
-## VPC — Sanal Özel Bulut (Virtual Private Cloud)
+## VPC (Virtual Private Cloud)
 
 Çoğu kullanıcı Google Cloud'a ya kendi VPC'sini tanımlayarak ya da varsayılan VPC ile başlar. Peki VPC nedir?
 
@@ -406,7 +406,7 @@ Bu neden önemli? Çünkü:
 
 - Küresel kapsamlı ağ düzenlerini kolayca tanımlarsın.
 - Kaynaklar aynı alt ağda ama **farklı zonlarda** olabilir.
-- Bir alt ağın boyutunu, ona ayrılan IP adresi aralığını genişleterek büyütebilirsin ve bu, **zaten yapılandırılmış sanal makineleri etkilemez.**
+- Bir alt ağın boyutunu, ona ayrılan IP adresi aralığını genişleterek büyütebilirsin ve bu, **zaten yapılandırılmış VM'leri etkilemez.**
 
 Somut örnek: `vpc1` adlı bir VPC ağın olsun, `asia-east1` ve `us-east1` bölgelerinde iki alt ağı bulunsun. VPC'ye üç Compute Engine VM'i bağlıysa ve bunlar aynı alt ağdaysa, **farklı zonlarda olsalar bile "komşu" sayılırlar.** Bu, hem kesintilere dayanıklı hem de basit ağ düzenine sahip çözümler kurmanı sağlar.
 
@@ -414,9 +414,9 @@ Somut örnek: `vpc1` adlı bir VPC ağın olsun, `asia-east1` ve `us-east1` böl
 
 ## Compute Engine — Google Cloud'un IaaS çözümü
 
-Compute Engine ile Google altyapısında **sanal makineler** oluşturup çalıştırırsın. Peşin yatırım yoktur; hızlı ve tutarlı performans için tasarlanmış bir sistemde binlerce sanal CPU çalışabilir.
+Compute Engine ile Google altyapısında **VM'ler** oluşturup çalıştırırsın. Peşin yatırım yoktur; hızlı ve tutarlı performans için tasarlanmış bir sistemde binlerce sanal CPU çalışabilir.
 
-Her sanal makine, tam teşekküllü bir işletim sisteminin gücünü ve işlevini taşır. Yani fiziksel bir sunucu gibi yapılandırırsın: ne kadar CPU gücü, ne kadar bellek, ne kadar ve ne tür depolama, hangi işletim sistemi.
+Her VM, tam teşekküllü bir işletim sisteminin gücünü ve işlevini taşır. Yani fiziksel bir sunucu gibi yapılandırırsın: ne kadar CPU gücü, ne kadar bellek, ne kadar ve ne tür depolama, hangi işletim sistemi.
 
 - **Nasıl oluşturulur?** Google Cloud Console, gcloud CLI veya Compute Engine API ile.
 - **İşletim sistemi:** Google'ın sağladığı Linux ve Windows Server imajları ya da bunların özelleştirilmiş sürümleri. Başka işletim sistemlerinin imajlarını da kurup çalıştırabilirsin.
@@ -443,7 +443,7 @@ Bunları iyi öğren; hem sınavda hem maliyet optimizasyonunda karşına çıka
 
 ## Otomatik ölçekleme (autoscaling)
 
-Compute Engine'in **Autoscaling** özelliği, yük metriklerine göre uygulamaya VM ekler ya da çıkarır. İşin diğer yarısı gelen trafiği VM'ler arasında **dengelemektir** (yük dengeleme — birazdan).
+Compute Engine'in **Autoscaling** özelliği, yük metriklerine göre uygulamaya VM ekler ya da çıkarır. İşin diğer yarısı gelen trafiği VM'ler arasında **dengelemektir** (load balancing — birazdan).
 
 Çok büyük VM'ler de yapılandırabilirsin (bellek içi veritabanları, CPU yoğun analizler için harika) ama çoğu müşteri **yukarı (up) değil, dışa (out) ölçeklenerek** başlar. Yani tek dev makine yerine çok sayıda orta makine. VM başına maksimum CPU sayısı, makinenin "makine ailesine" bağlıdır ve kullanıcının zon bazlı kotasıyla da sınırlanır.
 
@@ -461,29 +461,29 @@ Fiziksel ağlara benzer şekilde VPC'lerin de özellikleri vardır — ama çoğ
 
 **Shared VPC.** Bir projedeki neyin, başka bir projedeki VPC ile etkileşebileceğini IAM'in tüm gücüyle kontrol etmek istersen Shared VPC yapılandırırsın. (Özet kapanışta bu, "daha az ağ yönetimi" sağlayan özellikler arasında sayılır.)
 
-## Cloud Load Balancing — Yük dengeleme
+## Cloud Load Balancing
 
 Sorun şu: Uygulaman bir an 4 VM, başka bir an 40 VM ile sunuluyorsa, müşterin ona nasıl ulaşacak? Cevap: **Cloud Load Balancing.**
 
-Yük dengeleyicinin görevi, kullanıcı trafiğini bir uygulamanın **birden fazla örneğine dağıtmaktır.** Yükü yayarak performans sorunları riskini azaltır. Cloud Load Balancing:
+Load balancer'ın görevi, kullanıcı trafiğini bir uygulamanın **birden fazla örneğine dağıtmaktır.** Yükü yayarak performans sorunları riskini azaltır. Cloud Load Balancing:
 
 - **Tam dağıtık, yazılım tanımlı, yönetilen** bir servistir. VM'lerde çalışmadığı için ölçeklemesi ya da yönetimiyle uğraşmazsın.
 - Her tür trafiğin önüne konabilir: HTTP/HTTPS, diğer TCP ve SSL trafiği, UDP trafiği.
-- **Bölgeler arası yük dengeleme** ve **otomatik çoklu bölge yük devri (failover)** sağlar; arka uçlar sağlıksızlaşırsa trafiği yavaşça kesirler halinde kaydırır.
+- **Bölgeler arası load balancing** ve **otomatik çoklu bölge yük devri (failover)** sağlar; arka uçlar sağlıksızlaşırsa trafiği yavaşça kesirler halinde kaydırır.
 - Kullanıcı, trafik, ağ ve arka uç sağlığındaki değişimlere hızla tepki verir.
 - **Ön ısıtma (pre-warming) gerektirmez.** Ani talep patlaması beklesen bile Google'a önceden haber vermek için destek talebi açman gerekmez.
 
-### Yük dengeleyici türleri (OSI katmanına göre)
+### Load balancer türleri (OSI katmanına göre)
 
-Google Cloud, yük dengeleyicileri çalıştıkları **OSI katmanına** ve işlevlerine göre sınıflandırır.
+Google Cloud, load balancer'ları çalıştıkları **OSI katmanına** ve işlevlerine göre sınıflandırır.
 
-**Application Load Balancer (Uygulama Yük Dengeleyici).**
+**Application Load Balancer.**
 - **Uygulama katmanında** çalışır, HTTP ve HTTPS trafiği içindir.
 - İçerik tabanlı yönlendirme ve SSL/TLS sonlandırma gibi gelişmiş özellikler ister web uygulamaları için idealdir.
 - **Ters proxy (reverse proxy)** olarak çalışır; gelen trafiği tanımladığın kurallara göre birden çok arka uca dağıtır.
 - Hem internete açık (external) hem dahili (internal) yapılandırılabilir.
 
-**Network Load Balancer (Ağ Yük Dengeleyici).**
+**Network Load Balancer.**
 - **Taşıma katmanında** çalışır; TCP, UDP ve diğer IP protokollerini verimli işler.
 - İki alt türü vardır:
   - **Proxy Network Load Balancer:** Ters proxy gibi davranır; istemci bağlantısını sonlandırıp arka uca yeni bağlantı kurar. Gelişmiş trafik yönetimi sunar; hem on-premises hem çeşitli bulut ortamlarındaki arka uçları destekler.
@@ -497,7 +497,7 @@ Google Cloud, yük dengeleyicileri çalıştıkları **OSI katmanına** ve işle
 
 **Cloud DNS.** Peki Google Cloud'da kurduğun uygulamaların hostname ve adreslerini dünya nasıl bulacak? Cloud DNS ile. Bu, Google ile aynı altyapıda çalışan **yönetilen bir DNS servisidir**; düşük gecikme, yüksek kullanılabilirlik ve uygun maliyet sağlar. Yayınladığın DNS bilgisi dünya çapında yedekli konumlardan sunulur. **Programlanabilir**dir: milyonlarca DNS zone ve kaydını konsol, komut satırı veya API ile yönetebilirsin.
 
-**Cloud CDN (İçerik Dağıtım Ağı).** Google'ın küresel bir **kenar önbelleği (edge cache)** sistemi vardır. Kenar önbelleği, içeriği son kullanıcıya daha yakın önbellek sunucularında saklamak demektir. Cloud CDN ile içerik dağıtımını hızlandırırsın; sonuç:
+**Cloud CDN (Content Delivery Network).** Google'ın küresel bir **kenar önbelleği (edge cache)** sistemi vardır. Kenar önbelleği, içeriği son kullanıcıya daha yakın önbellek sunucularında saklamak demektir. Cloud CDN ile içerik dağıtımını hızlandırırsın; sonuç:
 
 - Müşteriler **daha düşük ağ gecikmesi** yaşar.
 - İçeriğinin kaynağı (origin) **daha az yük** görür.
@@ -717,7 +717,7 @@ Bu tablo, "hangi servis hangi iş için" sorusunun özüdür. Sınavda buradan �
 
 ## Konteyner neden var? IaaS ve PaaS arasındaki boşluk
 
-Önce sorunu görelim. **IaaS**, sanal makinelerle donanımı sanallaştırır. Her geliştirici kendi işletim sistemini kurar, donanıma erişir, kendi içine kapalı ortamında uygulamasını inşa eder (RAM, dosya sistemi, ağ arayüzleri...). Çok esnektir — istediğin runtime'ı, web sunucusunu, veritabanını kurarsın.
+Önce sorunu görelim. **IaaS**, VM'lerle donanımı sanallaştırır. Her geliştirici kendi işletim sistemini kurar, donanıma erişir, kendi içine kapalı ortamında uygulamasını inşa eder (RAM, dosya sistemi, ağ arayüzleri...). Çok esnektir — istediğin runtime'ı, web sunucusunu, veritabanını kurarsın.
 
 Ama bu esnekliğin bir bedeli var: **En küçük işlem birimi, kendi VM'iyle birlikte bir uygulamadır.** Misafir işletim sistemi (guest OS) gigabaytlarca olabilir ve açılması dakikalar sürer. Talep artınca, her yeni örnek için **tüm VM'i kopyalayıp guest OS'u yeniden açman** gerekir — yavaş ve pahalı.
 
@@ -759,7 +759,7 @@ En üst düzeyde Kubernetes, **konteynerleri bir dizi düğüm (node) üzerine d
 - **Control plane (kontrol düzlemi)** olarak çalışan birincil bileşenler,
 - Konteynerleri çalıştıran **node'lar.**
 
-> **Terim tuzağı:** Kubernetes'te bir **node**, bir hesaplama örneğini (makine) temsil eder. Bu, Google Cloud'daki bir "node"dan farklıdır — Google Cloud'da node, Compute Engine'de çalışan bir sanal makinedir.
+> **Terim tuzağı:** Kubernetes'te bir **node**, bir hesaplama örneğini (makine) temsil eder. Bu, Google Cloud'daki bir "node"dan farklıdır — Google Cloud'da node, Compute Engine'de çalışan bir VM'dir.
 
 Kubernetes'in temel felsefesi: Sen uygulamaların kümesini ve nasıl etkileşeceklerini **tanımlarsın**, Kubernetes bunu nasıl gerçekleştireceğine **kendisi karar verir.**
 
@@ -786,7 +786,7 @@ Kubernetes'in temel felsefesi: Sen uygulamaların kümesini ve nasıl etkileşec
 - Pod'lara **kararlı bir uç nokta (stable endpoint / fixed IP)** sağlar.
 - Örnek: `frontend` ve `backend` diye iki Pod kümen olsun, her biri kendi Service'inin arkasında. Backend Pod'ları değişse bile, frontend bunu fark etmez; sadece **backend Service'ine** başvurur.
 
-Bir denetleyici (controller) şöyle der: "Bu Service'e, dışarıdan erişilebilsin diye genel IP'li bir **harici yük dengeleyici** eklemem gerek." **GKE'de bu yük dengeleyici bir network load balancer olarak** oluşturulur. O IP'ye ulaşan her istemci, Service arkasındaki bir Pod'a yönlendirilir.
+Bir denetleyici (controller) şöyle der: "Bu Service'e, dışarıdan erişilebilsin diye genel IP'li bir **harici load balancer** eklemem gerek." **GKE'de bu load balancer bir Network Load Balancer olarak** oluşturulur. O IP'ye ulaşan her istemci, Service arkasındaki bir Pod'a yönlendirilir.
 
 **Ölçekleme.** Bir Deployment'ı ölçeklemek için `kubectl scale` komutunu çalıştırırsın. Örneğin üç Pod oluşturulur, hepsi Service'in arkasına konur ve tek bir sabit IP'yi paylaşır. Otomatik ölçekleme de kullanabilirsin — örneğin "CPU kullanımı belirli bir sınıra ulaşınca Pod sayısı artsın."
 
@@ -831,7 +831,7 @@ Node yapılandırması ve yönetimi, kullandığın GKE moduna bağlıdır.
 
 **Cluster oluşturma ve avantajlar.** Cluster'ı Google Cloud Console ya da gcloud ile oluşturursun. Cluster'lar özelleştirilebilir; farklı makine tipleri, node sayısı ve ağ ayarlarını destekler. GKE cluster'ı çalıştırmanın getirdiği gelişmiş yönetim özellikleri:
 
-- Compute Engine örnekleri için yük dengeleme,
+- Compute Engine örnekleri için load balancing,
 - **Node pool'lar** — cluster içinde alt node kümeleri, ek esneklik için,
 - Cluster'ın node sayısının otomatik ölçeklenmesi,
 - Node yazılımının otomatik yükseltilmesi,
@@ -1043,7 +1043,7 @@ Bu liste, transkriptteki en çok karıştırılan ve en çok sorulan noktaların
 - **Service account** hem kimlik hem kaynaktır; parola yerine kriptografik anahtar kullanır.
 - **Rate quota** zamanla sıfırlanır; **allocation quota** adet sınırıdır. İkisi de proje düzeyinde.
 - **VPC küreseldir**, subnet'ler bölgeseldir ve zonları kapsar.
-- Yük dengeleyici: **HTTP(S) → Application LB**; **TCP/UDP → Network LB** (proxy = bağlantı sonlandırır; passthrough = kaynak IP korunur).
+- Load balancer: **HTTP(S) → Application LB**; **TCP/UDP → Network LB** (proxy = bağlantı sonlandırır; passthrough = kaynak IP korunur).
 - Hibrit bağlantıda **peering SLA kapsamında değildir**; **Dedicated/Partner Interconnect %99,99'a varan SLA** sunabilir.
 - Depolama: blob → **Cloud Storage**; SQL tek bölge → **Cloud SQL**; SQL + yatay ölçek → **Spanner**; NoSQL mobil/senkron → **Firestore**; NoSQL büyük veri → **Bigtable** (SQL ve çok satırlı transaction **yok**).
 - Cloud Storage sınıfları erişim sıklığına göre: **Standard → Nearline (~ayda bir) → Coldline (~90 gün) → Archive (yılda birden az, 365 gün min.)**. **Autoclass** bunu otomatikleştirir.

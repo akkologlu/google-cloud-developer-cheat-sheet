@@ -13,7 +13,7 @@ Bir düşünce deneyiyle başlayalım: İki yaşındaki bir çocuğa bir elma il
 Bu modül iki ana parçadan oluşuyor:
 
 1. **Önceden eğitilmiş makine öğrenmesi API'leri** — Vision AI, Speech-to-Text/Text-to-Speech, Translation AI, Natural Language AI, Video AI, Document AI ve AutoML gibi hazır zekâ parçaları. Bunlar dar, belirli bir problemi (görüntüde nesne tanıma, sesi metne çevirme gibi) son derece iyi çözen modellerdir.
-2. **Generative AI (üretken yapay zekâ)** — daha genel, daha esnek bir paradigma. Var olan içerikten öğrenip **yeni** içerik üreten modeller; büyük dil modelleri (LLM) bunun en tanıdık örneğidir. Bu bölümde generative AI'ın geleneksel programlamadan ve dar makine öğrenmesinden nasıl farklı olduğunu, hangi kullanım senaryolarına uygun olduğunu ve bir geliştirici olarak kod yazma sürecini nasıl dönüştürdüğünü öğreneceksin.
+2. **Generative AI (üretken yapay zekâ)** — daha genel, daha esnek bir paradigma. Var olan içerikten öğrenip **yeni** içerik üreten modeller; LLM'ler (Large Language Model) bunun en tanıdık örneğidir. Bu bölümde generative AI'ın geleneksel programlamadan ve dar makine öğrenmesinden nasıl farklı olduğunu, hangi kullanım senaryolarına uygun olduğunu ve bir geliştirici olarak kod yazma sürecini nasıl dönüştürdüğünü öğreneceksin.
 
 Bu iki parça aslında aynı sorunun iki farklı cevabıdır: **"Uygulamama zekâ eklemem gerekiyor, ama ben bir ML araştırmacısı değilim — ne yapmalıyım?"** Cevap, ihtiyacına göre değişir: Belirli, dar bir görevin varsa (örneğin bir görseldeki nesneleri etiketlemek) önceden eğitilmiş bir API yeterlidir. Daha genel, yaratıcı ya da açık uçlu bir iş yapman gerekiyorsa (metin üretmek, kod yazmak, özetlemek) generative AI'a yönelirsin. Şimdi baştan başlayalım.
 
@@ -133,7 +133,7 @@ Bu öğrenme türüne **"eğitim" (training)** denir. Var olan içerik kullanıl
 
 Yapay zekâ, yeni içeriği nasıl üretir? Metin, görsel, ses gibi **devasa miktarda** var olan içerikten öğrenerek. Bu eğitim süreci, bir **"foundation model" (temel model)** ortaya çıkarır.
 
-En popüler foundation model türü, **büyük dil modeli (LLM — large language model)**'dir. LLM'ler yalnızca **metin verisi** üzerinde eğitilir; ama diğer foundation model türleri görüntü ya da programlama kodu gibi başka veri tipleri üzerinde de eğitilebilir.
+En popüler foundation model türü, **LLM (Large Language Model)**'dir. LLM'ler yalnızca **metin verisi** üzerinde eğitilir; ama diğer foundation model türleri görüntü ya da programlama kodu gibi başka veri tipleri üzerinde de eğitilebilir.
 
 Foundation model'in iki kullanım biçimi vardır:
 
@@ -160,16 +160,16 @@ Bu, modülün en kavramsal ve en önemli kısmı: generative AI'ın **neden var 
 
 > **Sınav tuzağı — üç yaklaşımı karıştırma:** Bu üçlü sırasıyla birbirinin **evrimidir**, birbirinin yerine geçen alternatifler değildir. Geleneksel programlama kuralları elle yazmanın imkânsızlığından tıkanır → makine öğrenmesi veri-tabanlı öğrenmeyle bunu çözer ama dar kalır → generative AI, devasa çok modlu veriyle **genel amaçlı** bir zekâ hedefler. Soruda "önceden tanımlı kurallar" geçiyorsa geleneksel programlama; "belirli bir görevi veri ile öğrenen dar model" geçiyorsa makine öğrenmesi; "genel, yaratıcı, yeni içerik üreten" geçiyorsa generative AI'dır.
 
-## Büyük dil modelleri (LLM) nedir — "büyük" ve "genel amaçlı" ne demek?
+## LLM (Large Language Model) nedir — "büyük" ve "genel amaçlı" ne demek?
 
-Büyük dil modelleri, **önceden eğitilebilen (pre-trained)** ve sonra **belirli amaçlar için ince ayar (fine-tune) yapılabilen** büyük, genel amaçlı dil modelleridir. Peki "büyük" (large) tam olarak ne demek? İki anlamı vardır:
+LLM'ler, **önceden eğitilebilen (pre-trained)** ve sonra **belirli amaçlar için ince ayar (fine-tune) yapılabilen** büyük, genel amaçlı dil modelleridir. Peki "büyük" (large) tam olarak ne demek? İki anlamı vardır:
 
 1. **Eğitim veri kümesinin devasa boyutu** — bazen **petabayt** ölçeğine ulaşır.
 2. **Parametre sayısı** — artık milyarlara, hatta trilyonlara ulaşıyor. **Parametreler**, makinenin model eğitimi sırasında öğrendiği bellek ve bilgidir; bir modelin bir problemi (örneğin metin tahmin etmeyi) çözme yeteneğini belirler.
 
 **"Genel amaçlı" (general-purpose)** ne demek? Bu modellerin **yaygın problemleri çözmeye yetecek kadar** yeterli olduğu anlamına gelir. Modeller, yapmaya çalıştığın spesifik görevden bağımsız olarak, **insan dilinde bulunan ortaklık (commonality)** sayesinde çalışır — yani dilin kendi yapısındaki örüntüleri öğrenirler, tek bir dar göreve özgü değil.
 
-Bu bizi son noktaya getiriyor: **önceden eğitilmiş (pre-trained) ve ince ayarlı (fine-tuned) olma özelliği.** Bir büyük dil modeli, geniş bir veri kümesiyle **genel amaçlı kullanım için önceden eğitilebilir.** Daha sonra, çok daha küçük bir veri kümesi kullanılarak **spesifik bir amaç için ince ayar yapılabilir.**
+Bu bizi son noktaya getiriyor: **önceden eğitilmiş (pre-trained) ve ince ayarlı (fine-tuned) olma özelliği.** Bir LLM, geniş bir veri kümesiyle **genel amaçlı kullanım için önceden eğitilebilir.** Daha sonra, çok daha küçük bir veri kümesi kullanılarak **spesifik bir amaç için ince ayar yapılabilir.**
 
 > **Önceki bölümle bağ:** Bu "pre-trained + fine-tuned" ikilisi, aslında Parça 1'deki foundation model → özelleştirilmiş model geçişinin **aynısıdır.** LLM, foundation model'in en tanıdık örneğidir; pre-training foundation model oluşturma sürecidir, fine-tuning ise onu senin ihtiyacına göre uyarlama sürecidir.
 
@@ -279,4 +279,4 @@ Modülün tüm parçalarını, bir geliştiricinin karşılaşacağı somut sena
 
 ---
 
-> **Kapanış:** Bu modül, "uygulamama nasıl zekâ eklerim" sorusuna iki katmanlı bir cevap verdi. Önce, belirli ve dar bir problemin varsa — bir görseli anlamak, bir sesi metne çevirmek, bir metindeki duyguyu tespit etmek — Google'ın önceden eğitilmiş API'lerinin bunu senin için zaten çözdüğünü, tek yapman gerekenin bir REST çağrısı olduğunu gördün. Sonra, daha genel ve açık uçlu bir ihtiyacın varsa — yeni içerik üretmek, özetlemek, keşfetmek, otomatikleştirmek — generative AI'ın ve büyük dil modellerinin bu boşluğu nasıl doldurduğunu, ve bunun geleneksel programlama ile dar makine öğrenmesinden köklü biçimde nasıl farklı olduğunu öğrendin. Son olarak, bu gücün sadece uygulamanın **kullanıcıya sunduğu** özelliklerde değil, senin **geliştirme sürecinin kendisinde** de — Gemini destekli kod üretimi, açıklama, hata giderme ve çeviri ile — nasıl devreye girdiğini gördün. Sınav öncesi "En Kritik Ayrımlar" listesini tekrar oku; özellikle üç yaklaşımın (geleneksel programlama / dar ML / generative AI) birbirinin evrimi olduğunu ve "büyük" kelimesinin LLM bağlamında hem veri hem parametre boyutunu kapsadığını unutma. Bir konuda takılırsan ilgili parçaya dön ve "bu API/yaklaşım hangi somut sorunu çözmek için var" sorusunu yeniden kur.
+> **Kapanış:** Bu modül, "uygulamama nasıl zekâ eklerim" sorusuna iki katmanlı bir cevap verdi. Önce, belirli ve dar bir problemin varsa — bir görseli anlamak, bir sesi metne çevirmek, bir metindeki duyguyu tespit etmek — Google'ın önceden eğitilmiş API'lerinin bunu senin için zaten çözdüğünü, tek yapman gerekenin bir REST çağrısı olduğunu gördün. Sonra, daha genel ve açık uçlu bir ihtiyacın varsa — yeni içerik üretmek, özetlemek, keşfetmek, otomatikleştirmek — generative AI'ın ve LLM'lerin bu boşluğu nasıl doldurduğunu, ve bunun geleneksel programlama ile dar makine öğrenmesinden köklü biçimde nasıl farklı olduğunu öğrendin. Son olarak, bu gücün sadece uygulamanın **kullanıcıya sunduğu** özelliklerde değil, senin **geliştirme sürecinin kendisinde** de — Gemini destekli kod üretimi, açıklama, hata giderme ve çeviri ile — nasıl devreye girdiğini gördün. Sınav öncesi "En Kritik Ayrımlar" listesini tekrar oku; özellikle üç yaklaşımın (geleneksel programlama / dar ML / generative AI) birbirinin evrimi olduğunu ve "büyük" kelimesinin LLM bağlamında hem veri hem parametre boyutunu kapsadığını unutma. Bir konuda takılırsan ilgili parçaya dön ve "bu API/yaklaşım hangi somut sorunu çözmek için var" sorusunu yeniden kur.

@@ -12,7 +12,7 @@ Modülün açılış cümlesi bu yelpazenin **eksenini** tanımlıyor: **"Ne kad
 
 Modül şu üç platformu bu eksende ele alıyor:
 
-1. **Compute Engine** — sanal makineler (VM). En çok kontrol, en çok operasyonel efor.
+1. **Compute Engine** — VM'ler. En çok kontrol, en çok operasyonel efor.
 2. **Google Kubernetes Engine (GKE)** — konteynerleri yöneten, orkestre eden bir platform. Orta düzey kontrol, orta düzey efor (ve Standard/Autopilot modlarıyla bu ortanın içinde bile bir yelpaze var).
 3. **Cloud Run** — tam yönetilen (fully managed), sunucusuz (serverless) bir konteyner platformu. En az kontrol, en az operasyonel efor.
 
@@ -30,7 +30,7 @@ Bunlara ek olarak modül, **App Engine**'i de kısaca Cloud Run'la karşılaşt�
 
 ## Neden var?
 
-Bulut öncesi dünyada, bir uygulama çalıştırmak istediğinde fiziksel bir sunucu satın alır, veri merkezine kurar, işletim sistemini yükler, yazılımını kurar ve bakımını yapardın. **Compute Engine, bu tanıdık deneyimi bulutta yeniden yaratır** — ama fiziksel donanımla uğraşmadan. Modülün tanımıyla: Compute Engine, **"geleneksel bir veri merkezinde kullanmış olabileceğin sunucuları taklit eden"** sanal makineler (VM) oluşturmanı sağlar.
+Bulut öncesi dünyada, bir uygulama çalıştırmak istediğinde fiziksel bir sunucu satın alır, veri merkezine kurar, işletim sistemini yükler, yazılımını kurar ve bakımını yapardın. **Compute Engine, bu tanıdık deneyimi bulutta yeniden yaratır** — ama fiziksel donanımla uğraşmadan. Modülün tanımıyla: Compute Engine, **"geleneksel bir veri merkezinde kullanmış olabileceğin sunucuları taklit eden"** VM'ler oluşturmanı sağlar.
 
 Bu "taklit etme" kelimesi kilit noktadır. Compute Engine, sana **soyutlanmış bir platform** vermiyor; sana neredeyse fiziksel bir sunucu deneyimi kadar ham ve esnek bir zemin veriyor. Bu yüzden Compute Engine, **"Google Cloud'da çalıştırabileceğin en esnek seçenektir, ama aynı zamanda yönetmesi en çok operasyonel efor gerektiren seçenektir."** Bu iki cümle birbirinin doğal sonucudur: esneklik ve operasyonel yük, bu eksende her zaman birlikte artar.
 
@@ -42,25 +42,25 @@ Compute Engine'de VM oluştururken karşına çıkan seçim noktaları, "kontrol
 
 **Makine tipleri.** Compute Engine, popüler donanım konfigürasyonları için **önceden tanımlanmış (predefined) makine tipleri** sunar. Ama sabit seçeneklerle sınırlı kalmak istemezsen, **özel makine tipleri (custom machine types)** oluşturarak VM'inin CPU ve bellek miktarını tam ihtiyacına göre ayarlayabilirsin. Bu, "standart bir konfigürasyon mu yoksa tam istediğim gibi mi" sorusuna verilen esnek bir cevaptır — GKE veya Cloud Run'da bu seviyede ince ayar imkânın yoktur, çünkü orada altyapıyı sen seçmezsin.
 
-**Disklar.** Compute Engine'de **kalıcı disk (persistent disk)** ve **yerel SSD (local SSD)** oluşturup VM'e bağlayabilirsin. Bu disklere, bir masaüstü ya da sunucudaki fiziksel disklere eriştiğin gibi erişebilirsin. Ama fiziksel disklerden farklı olarak, **Compute Engine diskleri çalışırken (yani VM kapatılmadan) boyut olarak büyütülebilir** — ve ilginç bir detay: disk büyüdükçe **performans ve throughput da artar.** Bu, geleneksel donanımda hayal bile edemeyeceğin bir esnekliktir; fiziksel bir sunucuda disk büyütmek demek, sunucuyu kapatıp yeni bir disk takmak demektir.
+**Disklar.** Compute Engine'de **persistent disk (kalıcı disk)** ve **local SSD (yerel SSD)** oluşturup VM'e bağlayabilirsin. Bu disklere, bir masaüstü ya da sunucudaki fiziksel disklere eriştiğin gibi erişebilirsin. Ama fiziksel disklerden farklı olarak, **Compute Engine diskleri çalışırken (yani VM kapatılmadan) boyut olarak büyütülebilir** — ve ilginç bir detay: disk büyüdükçe **performans ve throughput da artar.** Bu, geleneksel donanımda hayal bile edemeyeceğin bir esnekliktir; fiziksel bir sunucuda disk büyütmek demek, sunucuyu kapatıp yeni bir disk takmak demektir.
 
 **Preemptible (önlenebilir) VM'ler.** Bunlar, **büyük hesaplama ve toplu (batch) işler için ideal** olan, indirimli VM'lerdir. Google Cloud, kapasiteyi geri almak zorunda kalırsa bu VM'leri **sonlandırabilir (terminate)**. Karşılığında, kesintilere dayanabilen uygulamalar için **standart VM'lere göre en az %60 indirim** sunulur.
 
 > **Neden bu değiş tokuş mantıklı?** Çünkü Google Cloud'un veri merkezlerinde her an kullanılmayan, atıl kapasite vardır. Bu kapasiteyi "eğer ihtiyacımız olursa geri alabiliriz" koşuluyla sana ucuza satmak, hem Google'a (atıl kaynağı paraya çevirir) hem de sana (büyük ama kesintiye toleranslı işler için devasa tasarruf) fayda sağlar. Ama bu, **her iş yükü için uygun değildir** — bir web sunucusu isteği ortasında VM'in sonlandırılması kabul edilemezken, gece çalışan bir toplu veri işleme (batch) işi, yarıda kesilip yeniden başlatılabilir.
 
-**İşletim sistemi seçimi.** Compute Engine üzerinde Debian, CentOS, Ubuntu ve çeşitli Linux dağıtımları veya Windows çalıştırabilirsin. İstersen Google Cloud topluluğundan paylaşılan bir imaj kullanabilir, istersen **kendi işletim sistemini** getirebilirsin (bring your own OS). Bu seviyede özgürlük, örneğin GKE'de yoktur — GKE, düğümler (node) için Google'ın optimize ettiği bir işletim sistemini kullanır ve sen bunu değiştiremezsin.
+**İşletim sistemi seçimi.** Compute Engine üzerinde Debian, CentOS, Ubuntu ve çeşitli Linux dağıtımları veya Windows çalıştırabilirsin. İstersen Google Cloud topluluğundan paylaşılan bir imaj kullanabilir, istersen **kendi işletim sistemini** getirebilirsin (bring your own OS). Bu seviyede özgürlük, örneğin GKE'de yoktur — GKE, node'lar (düğümler) için Google'ın optimize ettiği bir işletim sistemini kullanır ve sen bunu değiştiremezsin.
 
 ## GPU, TPU ve özel donanım ihtiyaçları
 
 Compute Engine VM'lerine **Graphics Processing Unit (GPU)** ve **Tensor Processing Unit (TPU)** bağlayabilirsin — paralel işleme ve makine öğrenmesi iş yüklerini hızlandırmak için. Bu, Compute Engine'in "özel donanım gerektiren uygulamalar için" doğru seçim olduğu senaryoların somut bir örneğidir: eğer uygulaman belirli bir GPU modeline ya da özel bir donanım yapılandırmasına ihtiyaç duyuyorsa, bu seviyedeki kontrolü sana ancak Compute Engine (ve GKE'nin belirli node pool'ları) verebilir.
 
-## Ölçeklendirme ve yüksek kullanılabilirlik: Yönetilen örnek grupları
+## Ölçeklendirme ve yüksek kullanılabilirlik: Managed Instance Group'lar (MIG)
 
-Compute Engine'de tek tek VM'lerle uğraşmak zorunda değilsin. Bir **instance template (örnek şablonu)** temel alınarak, **yönetilen örnek grupları (managed instance groups, MIG)** oluşturabilirsin. Bu gruplar üzerinde:
+Compute Engine'de tek tek VM'lerle uğraşmak zorunda değilsin. Bir **instance template (örnek şablonu)** temel alınarak, **managed instance groups (MIG, yönetilen örnek grupları)** oluşturabilirsin. Bu gruplar üzerinde:
 
 - **Global load balancing (küresel yük dengeleme)** yapılandırabilirsin.
 - Grubun **otomatik ölçeklenmesini (auto scaling)** ayarlayabilirsin.
-- Compute Engine, grup içinde **sağlık kontrolleri (health checks)** yapar ve **sağlıksız örnekleri otomatik olarak değiştirir.**
+- Compute Engine, grup içinde **health check'ler (sağlık kontrolleri)** yapar ve **sağlıksız örnekleri otomatik olarak değiştirir.**
 - Belirli bölgelerdeki trafik hacmine göre örnek sayısını **otomatik olarak ölçeklendirebilirsin.**
 
 Bu özellikler, Compute Engine'in "sadece tek bir VM açıp unutmak" seviyesinin çok ötesine geçebildiğini gösteriyor — ama dikkat: bu ölçeklendirme ve sağlık kontrolü mekanizmalarını **kurmak ve yapılandırmak yine senin görevin.** GKE veya Cloud Run'da bu tür ölçeklendirme davranışları platformun **doğasında zaten var**; Compute Engine'de ise bunları sen inşa edersin.
@@ -150,8 +150,8 @@ GKE, **Docker imajı olarak paketleyebileceğin her uygulama çalışma zamanın
 Bir Kubernetes ortamının altyapısını yönetmek karmaşık olabilir; GKE bu operasyonel görevlerin çoğunu basitleştirir:
 
 - Kubernetes **persistent volume**'lar (kalıcı hacimler) oluşturduğunda, GKE varsayılan olarak **Google Cloud persistent disk'lerini otomatik olarak provizyonlar** — stateful (durum tutan) uygulamalar için depolama sağlamak amacıyla.
-- Kubernetes **network load balancer servisleri** dağıttığında, GKE otomatik olarak **Google Cloud ağ yük dengeleyicilerini** provizyonlar.
-- Kubernetes **Ingress kaynakları** yapılandırdığında, GKE **Google Cloud HTTP/HTTPS yük dengelemeyi** otomatik olarak provizyonlar.
+- Kubernetes **network load balancer servisleri** dağıttığında, GKE otomatik olarak **Google Cloud network load balancer'larını** provizyonlar.
+- Kubernetes **Ingress kaynakları** yapılandırdığında, GKE **Google Cloud HTTP/HTTPS Load Balancing'i** otomatik olarak provizyonlar.
 
 Bu otomatik provizyonlama, bu kaynakları **elle** yapılandırma ve yönetme ihtiyacını ortadan kaldırır. GKE ayrıca **Google Cloud Observability** desteğine sahiptir — sorun giderme (troubleshooting) ve uygulama/servis izleme araçlarıyla entegrasyon sağlar.
 
@@ -322,7 +322,7 @@ Bu, karar ağacının **ilk ve en önemli** dalıdır:
 Daha fazla altyapı kontrolü kazanmak, daha fazla operasyonel efor gerektirir. Bunu somutlaştıralım:
 
 - **Compute Engine** VM'i oluşturduğunda, **işletim sistemi ve yazılım güncellemelerini sen kontrol edersin.**
-- **GKE** ile, Google cluster'ının **sanal makine node'larını** yönetir, ama sen hâlâ **cluster'ın boyutunu yönetir** ve **cluster içindeki her uygulamanın nasıl ölçekleneceğine sen karar verirsin.**
+- **GKE** ile, Google cluster'ının **VM node'larını** yönetir, ama sen hâlâ **cluster'ın boyutunu yönetir** ve **cluster içindeki her uygulamanın nasıl ölçekleneceğine sen karar verirsin.**
 - **Cloud Run** sunucusuzdur (serverless). Sadece uygulamanı dağıtman yeterlidir; Google altyapıyı ve otomatik ölçeklendirmeyi yönetir.
 
 ## Soru 3: Ekiplerim nasıl yapılanmış?
@@ -398,7 +398,7 @@ Ve en önemlisi: **Cloud Client Library'ler ile yazılmış çoğu uygulama, pla
 
 **Modülün ana ekseni:** Google Cloud'da compute seçimi tek bir eksen üzerinde düşünülür — **altyapı kontrolü arttıkça operasyonel efor da artar.** Compute Engine bu eksenin "en çok kontrol" ucunda, Cloud Run "en az efor" ucunda, GKE ise ikisi arasında (ve Standard/Autopilot ile kendi içinde de bir yelpazede) durur.
 
-**Compute Engine:** Sanal makineler; geleneksel sunucu deneyimini bulutta taklit eder. Predefined ya da custom makine tipleri, büyürken performansı da artan persistent disk/local SSD, kesintiye toleranslı işler için %60+ indirimli preemptible VM'ler, istediğin işletim sistemi, GPU/TPU doğrudan bağlama. Managed instance group'larla otomatik ölçekleme, sağlık kontrolü, global load balancing kurulabilir — ama bunların **hepsini sen yapılandırırsın.** İdeal kullanım: lift-and-shift, özel lisans/donanım, HTTP-dışı protokoller.
+**Compute Engine:** VM'ler; geleneksel sunucu deneyimini bulutta taklit eder. Predefined ya da custom makine tipleri, büyürken performansı da artan persistent disk/local SSD, kesintiye toleranslı işler için %60+ indirimli preemptible VM'ler, istediğin işletim sistemi, GPU/TPU doğrudan bağlama. Managed instance group'larla otomatik ölçekleme, sağlık kontrolü, global load balancing kurulabilir — ama bunların **hepsini sen yapılandırırsın.** İdeal kullanım: lift-and-shift, özel lisans/donanım, HTTP-dışı protokoller.
 
 **Google Kubernetes Engine (GKE):** Kubernetes'in (container orkestrasyon platformunun) yönetilen hâli. Control plane node'ları ve pod'ları yönetir; pod = ağ/depolama paylaşan container grubu. **Standard mod** = Google control plane'i yönetir, sen node pool + ağ + güvenliği yönetirsin (esneklik önceliği). **Autopilot mod** = Google her şeyi (control plane + node + node pool) yönetir, sen sadece workload'a odaklanırsın (operasyonel maliyet azaltma önceliği). GKE otomatik: container-optimized OS, AutoUpgrade, auto-repair (drain + recreate), Cloud Monitoring/Logging entegrasyonu, otomatik persistent disk/load balancer/HTTP(S) load balancer provizyonlama. GPU/TPU node pool'lar üzerinden desteklenir. Deployment = stateless, StatefulSet = stateful. `kubectl` ile yönetilir, en iyi pratik YAML manifest kullanmaktır.
 
